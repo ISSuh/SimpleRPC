@@ -1,8 +1,9 @@
 #include <iostream>
 
-#include <srpc/srpc.hpp>
+#include <srpc.hpp>
 
 int main() {
     std::cout << "SimpleRPC Example\n";
     
+    Mock mock; 
 }

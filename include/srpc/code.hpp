@@ -3,7 +3,8 @@
 #include <boost/asio.hpp>
 
 class Mock {
+ public:
     Mock() {
-        std::cout << "Mock" << std::end;
+        std::cout << "Mock" << std::endl;
     }
 };
