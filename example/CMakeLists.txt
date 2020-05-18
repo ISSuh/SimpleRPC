@@ -4,11 +4,9 @@ message("SimpleRPC Examples")
 
 SET ( BUILD_DIR_EXAMPLES ${CMAKE_SOURCE_DIR}/build/bin)
 
-
-
 include_directories(
         ${PROJECT_DIR}/include
-        ${Boost_INCLUDE_DIR}
+        ${SRPC_INCLUDES}
 )
 
 #-------------------------------------------------------------------------------
@@ -24,5 +22,5 @@ SET( SOURCES
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY  ${BUILD_DIR_EXAMPLES} )
 
 add_executable(${PROJECT_NAME} ${SOURCES})
-target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} -lboost_thread )
+target_link_libraries(${PROJECT_NAME} ${SRPC_LIBRARY} )
 set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "example")

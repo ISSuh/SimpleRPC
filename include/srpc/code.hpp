@@ -7,4 +7,9 @@ class Mock {
     Mock() {
         std::cout << "Mock" << std::endl;
     }
+
+    void run() {
+        boost::asio::io_service service;;
+        service.run();
+    }
 };
