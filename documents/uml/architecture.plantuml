@@ -1,0 +1,44 @@
+@startuml SimpleRPC_Arichitecture
+
+node User_ClientApp {
+  node UserFunction_client {
+
+  }
+
+  node SimpleRPC_client <<client>> {
+    node RPCMessage_client {
+    }
+    
+    node Session_client {
+    }
+
+    RPCMessage_client -down-> Session_client
+  }
+
+  UserFunction_client -down-> SimpleRPC_client : Call RPC
+}
+
+node User_ServerApp {
+  node SimpleRPC_server <<server>> {
+    node Session_server {
+    }
+    
+    node RPCMessage_server {
+    }
+
+    node UserDefineFunction <<function>> {
+    }
+
+    Session_server -down-> RPCMessage_server : Call defined RPC function
+    RPCMessage_server -down-> UserDefineFunction
+  }
+}
+
+node SimpleRPC_Message {
+
+}
+
+Session_client -right-> SimpleRPC_Message
+SimpleRPC_Message -right-> Session_server
+
+@enduml

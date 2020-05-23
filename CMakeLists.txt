@@ -15,17 +15,25 @@ ADD_COMPILE_OPTIONS ( -g -Wall )
 find_package(Boost REQUIRED COMPONENTS system)
 
 #-------------------------------------------------------------------------------
+# Set Configure
+#-------------------------------------------------------------------------------
+SET(SIMPLE_RPC_TARGET_NAME ${PROJECT_NAME})
+
+#-------------------------------------------------------------------------------
 # Set Build Variable
 #-------------------------------------------------------------------------------
 SET(PROJECT_DIR ${PROJECT_SOURCE_DIR})
+SET(BUILD_DIR_EXAMPLES ${CMAKE_SOURCE_DIR}/build/bin)
 
 SET(SRPC_INCLUDES
+    ${PROJECT_DIR}/include/simpleRPC
     ${Boost_INCLUDE_DIR}
 )
 
 SET(SRPC_LIBRARY
     ${Boost_LIBRARIES}
 )
+
 #-------------------------------------------------------------------------------
 # Set SubDirectory
 #-------------------------------------------------------------------------------

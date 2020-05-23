@@ -2,25 +2,12 @@ project(example)
 
 message("SimpleRPC Examples")
 
-SET ( BUILD_DIR_EXAMPLES ${CMAKE_SOURCE_DIR}/build/bin)
-
-include_directories(
-        ${PROJECT_DIR}/include
-        ${SRPC_INCLUDES}
+SET ( SUBDIRS
+  client
+  server
 )
 
-#-------------------------------------------------------------------------------
-# Project files
-#-------------------------------------------------------------------------------
-SET( SOURCES
-    main.cpp
-)
+foreach(SUBDIR ${SUBDIRS})
+  add_subdirectory(${SUBDIR})
+endforeach()
 
-#-------------------------------------------------------------------------------
-# Final target
-#-------------------------------------------------------------------------------
-SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY  ${BUILD_DIR_EXAMPLES} )
-
-add_executable(${PROJECT_NAME} ${SOURCES})
-target_link_libraries(${PROJECT_NAME} ${SRPC_LIBRARY} )
-set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "example")
