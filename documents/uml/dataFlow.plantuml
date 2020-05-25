@@ -1,4 +1,4 @@
-@startuml SimpleRPC_Arichitecture
+@startuml SimpleRPC_Data_Flow
 
 node User_ClientApp {
   node UserFunction_client {
@@ -12,10 +12,10 @@ node User_ClientApp {
     node Session_client {
     }
 
-    RPCMessage_client -down-> Session_client
+    RPCMessage_client -down-> Session_client : [2]
   }
 
-  UserFunction_client -down-> SimpleRPC_client : Call RPC
+  UserFunction_client -down-> SimpleRPC_client : [1] Call RPC
 }
 
 node User_ServerApp {

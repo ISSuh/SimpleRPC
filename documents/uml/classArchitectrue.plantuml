@@ -1,0 +1,99 @@
+@startuml SimpleRPC_Class_Architecture
+
+Network -[hidden]up- Util
+Function -[hidden]up- Network
+Function -[hidden]up- Util 
+
+package "Network" as Network {
+
+  package "Server Side" as ServerSide {
+
+    interface Server {
+
+    }
+
+    class TcpServer {
+
+    }
+
+    class ServerHandle {
+
+    }
+
+    TcpServer -up-|> Server
+    TcpServer -down-> ServerHandle
+  }
+
+  package "Client Side" as ClientSide {
+
+    interface Client {
+
+    }
+
+    class TcpClient {
+
+    }
+
+    class ClientHandle {
+
+    }
+
+    TcpClient -up-|> Client
+    TcpClient -down-> ClientHandle
+  }
+
+  class Session {
+    {method} read
+    {method} write
+  }
+
+  class Message {
+
+  }
+
+  Session -up-> TcpServer
+  Session -up-> TcpClient
+
+  Message -up-> TcpServer
+  Message -up-> TcpClient
+
+  Message -> Session
+}
+
+package "RPC Function" as Function {
+  rectangle "Base Class" as Base {
+    interface Base {
+
+    }
+  }
+
+  rectangle "User Defice Class" as UserDefine {
+    class UserClass {
+
+    }
+  }
+
+  UserClass -up-|> Base
+}
+
+package "Util" as Util {
+  enum Status {
+
+  }
+
+  class ThreadPool {
+
+  }
+
+  class TheadSafeQueue {
+
+  }
+
+  Status -[hidden]down- ThreadPool
+  ThreadPool -[hidden]down- TheadSafeQueue
+}
+
+ UserClass -up-> ServerHandle
+ UserClass -up-> ClientHandle
+
+@enduml
