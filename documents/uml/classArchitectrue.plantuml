@@ -1,5 +1,8 @@
 @startuml SimpleRPC_Class_Architecture
 
+scale 1280 width
+scale 720 height
+
 Network -[hidden]up- Util
 Function -[hidden]up- Network
 Function -[hidden]up- Util 
@@ -8,18 +11,38 @@ package "Network" as Network {
 
   package "Server Side" as ServerSide {
 
-    interface Server {
+    component "Decorator Patten" as DP{
+    }
 
+    component "Facotry Method Patten" as FMP{
+    }
+
+    component "Visitor Patten" as VP {
+    }
+
+    interface Server {
     }
 
     class TcpServer {
-
+      {field} -boost::asio::io_contect
+      {field} -boost::asio::ip::tcp::socket
+      {field} -boost::asio::ip::tcp::accepter
+      {field} -uint32_t port
+      {method} -acceptionHandle()
+      {method} +accept()
+      {method} +run()
+      {method} +terminate()
     }
 
     class ServerHandle {
-
+      {field} -std::string host
+      {field} -uint32_t port
+      {field} -boost::asio::io_contect
+      {method} +runServer()
+      {method} +regist()
     }
 
+    Server -[hidden]up- VP
     TcpServer -up-|> Server
     TcpServer -down-> ServerHandle
   }
@@ -27,73 +50,88 @@ package "Network" as Network {
   package "Client Side" as ClientSide {
 
     interface Client {
-
     }
 
     class TcpClient {
-
+      {field} -boost::asio::ip::tcp::socket
+      {field} -boost::asio::io_contect
+      {method} -connectionHandle()
+      {method} +connect()
+      {method} +close()
     }
 
     class ClientHandle {
-
+      {field} -boost::asio::io_contect
+      {method} -contextRun()
+      {method} +regist()
     }
 
     TcpClient -up-|> Client
     TcpClient -down-> ClientHandle
   }
 
-  class Session {
-    {method} read
-    {method} write
+  package "Session side" as Sessions {
+
+    component "Observer Patten" {
+    }
+
+    class Session {
+      {field} -boost::asio::ip::tcp::socket
+      {method} -readHandle()
+      {method} -writeHandle()
+      {method} +read()
+      {method} +write()
+    }
+
+    class Message {
+    }
+
+    Session -up-> TcpServer
+    Session -up-> TcpClient
+
+    Message -up-> TcpServer
+    Message -up-> TcpClient
+
+    Message -> Session
   }
-
-  class Message {
-
-  }
-
-  Session -up-> TcpServer
-  Session -up-> TcpClient
-
-  Message -up-> TcpServer
-  Message -up-> TcpClient
-
-  Message -> Session
 }
 
-package "RPC Function" as Function {
+package "RPC Function" as Function {  
   rectangle "Base Class" as Base {
-    interface Base {
-
+    interface BaseClass {
     }
   }
 
   rectangle "User Defice Class" as UserDefine {
     class UserClass {
-
     }
   }
 
-  UserClass -up-|> Base
+  component "Strategy Patten" {
+  }
+
+  ClientHandle -[hidden]down- UserClass 
+  ClientHandle -[hidden]down- BaseClass 
+  UserClass -left-|> BaseClass
 }
 
-package "Util" as Util {
+package "Utilize" as Util {
   enum Status {
-
   }
 
   class ThreadPool {
-
   }
 
   class TheadSafeQueue {
-
   }
 
   Status -[hidden]down- ThreadPool
   ThreadPool -[hidden]down- TheadSafeQueue
 }
 
- UserClass -up-> ServerHandle
- UserClass -up-> ClientHandle
+Network -[hidden]left- Util
+
+UserClass -up-> ServerHandle
+UserClass -up-> ClientHandle
 
 @enduml
