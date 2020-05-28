@@ -18,7 +18,7 @@ using namespace boost;
 
 class ServerHandle {
  public:
-  ServerHandle(int32_t port) : m_server(m_ioContext, port) {}
+  explicit ServerHandle(int32_t port) : m_server(m_ioContext, port) {}
 
   ~ServerHandle() = default;
 
@@ -27,7 +27,8 @@ class ServerHandle {
   }
 
  private:
-  asio::io_context m_ioContext;
+  asio::io_service m_ioContext;
+  // asio::io_context m_ioContext;
   TcpServer m_server;
 };
 

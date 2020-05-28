@@ -18,15 +18,19 @@ namespace srpc {
 
 using namespace boost;
 
+template<typename T>
 class Session : public std::enable_shared_from_this<Session> {
  public:
-  Session(asio::ip::tcp::socket socket) : m_socket(std::move(socket)) {}
+  explicit Session(asio::ip::tcp::socket socket) : m_socket(std::move(socket)) {}
   ~Session() = default;
+
+  void registAsyncAcceptHandler() {}
+  void registAsyncConnectHandler() {}
+  void registAsyncReadHandler() {}
+  void registAsyncWriteHandler() {}
 
   void connectSession() {
     std::cout << "---connectSession---\n";
-    read();
-    write("WelCome!");
   }
 
   void read() {

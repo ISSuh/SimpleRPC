@@ -21,24 +21,17 @@ using namespace boost;
 
 class TcpServer {
  public:
-  TcpServer(asio::io_context& ioContext, uint32_t port) :
+  explicit TcpServer(asio::io_service& ioContext, uint32_t port) :
       m_socket(ioContext),
       m_acceptor(ioContext, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)) {
-    accept();
   }
-
   ~TcpServer() = default;
 
+  void requestCall() {}
+  void responseCall() {}
+  void run() {}
  private:
-  void accept() {
-    m_acceptor.async_accept(m_socket, [this](boost::system::error_code ec) {
-        if (!ec) {
-          std::make_shared<Session>(std::move(m_socket))->connectSession();
-        }
 
-        accept();
-      });
-  }
 
  private:
   asio::ip::tcp::socket m_socket;

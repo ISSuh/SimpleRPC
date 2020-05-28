@@ -32,6 +32,7 @@ SET(SRPC_INCLUDES
 
 SET(SRPC_LIBRARY
     ${Boost_LIBRARIES}
+    pthread
 )
 
 #-------------------------------------------------------------------------------
