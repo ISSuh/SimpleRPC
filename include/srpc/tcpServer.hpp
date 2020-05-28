@@ -21,21 +21,30 @@ using namespace boost;
 
 class TcpServer {
  public:
-  explicit TcpServer(asio::io_service& ioContext, uint32_t port) :
-      m_socket(ioContext),
-      m_acceptor(ioContext, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)) {
+  explicit TcpServer(asio::io_service& ioContext, uint32_t port)
+      : m_socket(ioContext),
+        m_acceptor(ioContext, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)),
+        m_session(m_socket) {
+
+    registHandler();
   }
+
   ~TcpServer() = default;
 
-  void requestCall() {}
-  void responseCall() {}
   void run() {}
- private:
+  void updateRead() {}
+  void updateWrite() {}
 
+ private:
+  void accpet() {}
+
+  void registHandler() {
+  }
 
  private:
   asio::ip::tcp::socket m_socket;
   asio::ip::tcp::acceptor m_acceptor;
+  Session<TcpServer> m_session;
 };
 
 }   // namespace srpc
