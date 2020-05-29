@@ -21,7 +21,7 @@ template<typename T>
 class Session : public std::enable_shared_from_this<Session<T>> {
  public:
   explicit Session(boost::asio::io_service* ioContext, std::shared_ptr<T> system)
-      : m_socket(ioContext),
+      : m_socket(*ioContext),
         m_system(system.get()) {}
   ~Session() = default;
 
@@ -38,7 +38,7 @@ class Session : public std::enable_shared_from_this<Session<T>> {
     std::cout << "---read---\n";
 
     char msg[100];
-    m_socket.async_read_some(asio::buffer(msg, 100),
+    m_socket.async_read_some(boost::asio::buffer(msg, 100),
                              std::bind(&Session::readHandler,
                                       std::enable_shared_from_this<Session<T>>::shared_from_this(),
                                       std::placeholders::_1, std::placeholders::_2));
@@ -47,13 +47,13 @@ class Session : public std::enable_shared_from_this<Session<T>> {
   void write(const std::string& test) {
     std::cout << "---write---\n";
 
-    asio::async_write(m_socket, asio::buffer(test.c_str(), test.length()),
+    boost::asio::async_write(m_socket, boost::asio::buffer(test.c_str(), test.length()),
                       std::bind(&Session::writeHandler,
                       std::enable_shared_from_this<Session<T>>::shared_from_this(),
                       std::placeholders::_1));
   }
 
-  boost::asio::ip::tcp::socket& getSocket() const { return m_socket; }
+  boost::asio::ip::tcp::socket& getSocket() { return m_socket; }
 
  private:
     void readHandler(const boost::system::error_code& error, size_t len, const std::string& data) {

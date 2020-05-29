@@ -21,6 +21,7 @@
 #include <boost/asio.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 #include "server.hpp"
 #include "session.hpp"
@@ -31,7 +32,7 @@ class TcpServer : public std::enable_shared_from_this<TcpServer> {
  public:
   explicit TcpServer(boost::asio::io_service* ioContext, uint32_t port)
       : m_ioContext(ioContext),
-        m_acceptor(*ioContext, boost::asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)) {}
+        m_acceptor(*ioContext, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)) {}
 
   ~TcpServer() = default;
 
@@ -60,8 +61,8 @@ class TcpServer : public std::enable_shared_from_this<TcpServer> {
   }
 
  private:
-  const boost::asio::io_service* m_ioContext;
-  asio::ip::tcp::acceptor m_acceptor;
+  boost::asio::io_service* m_ioContext;
+  boost::asio::ip::tcp::acceptor m_acceptor;
 
   std::map<boost::uuids::uuid, Session<TcpServer>*> m_sessionMap;
 };
