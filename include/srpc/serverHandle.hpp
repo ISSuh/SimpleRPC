@@ -4,34 +4,46 @@
  * 
  */
 
-#ifndef SRPC_SERVER_HANDLE_HPP
-#define SRPC_SERVER_HANDLE_HPP
+#ifndef SRPC_SERVERHANDLE_HPP_
+#define SRPC_SERVERHANDLE_HPP_
 
+#include <iostream>
+#include <string>
+#include <vector>
+#include <map>
 #include <memory>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <atomic>
+
 #include <boost/asio.hpp>
 
 #include "tcpServer.hpp"
 
 namespace srpc {
 
-using namespace boost;
-
 class ServerHandle {
  public:
-  explicit ServerHandle(int32_t port) : m_server(m_ioContext, port) {}
-
+  explicit ServerHandle(uint32_t port) : m_server(&m_ioContext, port) {}
   ~ServerHandle() = default;
 
   void run() {
-    m_ioContext.run();
+    std::thread ioContextThread([&]() {
+      m_ioContext.run();
+    });
+
+    while (m_running) {
+      usleep(1);
+    }
   }
 
  private:
-  asio::io_service m_ioContext;
-  // asio::io_context m_ioContext;
+  boost::asio::io_service m_ioContext;
   TcpServer m_server;
+  std::atomic_bool m_running;
 };
 
-} // namespace sprc
+}  // namespace srpc
 
-#endif // SRPC_SERVER_HANDLE_HPP
+#endif  // SRPC_SERVERHANDLE_HPP_
