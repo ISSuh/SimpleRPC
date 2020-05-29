@@ -9,7 +9,7 @@
 
 #include <string>
 
-#include <boost/asio/io_context.hpp>
+#include <boost/asio.hpp>
 
 #include "tcpClient.hpp"
 
@@ -19,8 +19,8 @@ using namespace boost;
 
 class ClientHandle {
  public:
-  ClientHandle(const std::string& host,
-              const std::string& port) : m_client(m_ioContext, host, port) {}
+  explicit ClientHandle(const std::string& host,
+                        const std::string& port) : m_client(m_ioContext, host, port) {}
 
   ~ClientHandle() = default;
 
@@ -29,7 +29,8 @@ class ClientHandle {
   }
 
  private:
-  asio::io_context m_ioContext;
+  asio::io_service m_ioContext;
+  // asio::io_context m_ioContext;
   TcpClient m_client;
 };
 

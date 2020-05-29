@@ -7,42 +7,64 @@
 #ifndef SRPC_TCPSERVER_HPP_
 #define SRPC_TCPSERVER_HPP_
 
+#include <iostream>
+#include <string>
+#include <vector>
+#include <map>
 #include <memory>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <atomic>
 #include <utility>
 
 #include <boost/asio.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 #include "server.hpp"
 #include "session.hpp"
 
 namespace srpc {
 
-using namespace boost;
-
-class TcpServer {
+class TcpServer : public std::enable_shared_from_this<TcpServer> {
  public:
-  TcpServer(asio::io_context& ioContext, uint32_t port) :
-      m_socket(ioContext),
-      m_acceptor(ioContext, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)) {
-    accept();
-  }
+  explicit TcpServer(boost::asio::io_service* ioContext, uint32_t port)
+      : m_ioContext(ioContext),
+        m_acceptor(*ioContext, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)) {}
 
   ~TcpServer() = default;
 
- private:
-  void accept() {
-    m_acceptor.async_accept(m_socket, [this](boost::system::error_code ec) {
-        if (!ec) {
-          std::make_shared<Session>(std::move(m_socket))->connectSession();
-        }
+  void accpet() {
+    Session<TcpServer>* newSession = new Session<TcpServer>(m_ioContext, shared_from_this());
 
-        accept();
-      });
+    m_acceptor.async_accept(newSession->getSocket(),
+                            std::bind(&TcpServer::acceptHandle, this, newSession,
+                                      boost::asio::placeholders::error));
+  }
+  void updateRead() {}
+  void updateWrite() {}
+
+ private:
+  void acceptHandle(Session<TcpServer>* session, const boost::system::error_code& error) {
+    if (!error) {
+      boost::uuids::uuid newUUID = boost::uuids::random_generator()();
+      std::cout << "Accept New Client - " << newUUID <<'\n';
+
+      m_sessionMap[newUUID] = session;
+
+      accpet();
+    } else {
+      std::cout << "Accept Error!\n";
+    }
   }
 
  private:
-  asio::ip::tcp::socket m_socket;
-  asio::ip::tcp::acceptor m_acceptor;
+  boost::asio::io_service* m_ioContext;
+  boost::asio::ip::tcp::acceptor m_acceptor;
+
+  std::map<boost::uuids::uuid, Session<TcpServer>*> m_sessionMap;
 };
 
 }   // namespace srpc

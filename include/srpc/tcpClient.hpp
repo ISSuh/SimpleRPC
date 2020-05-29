@@ -19,7 +19,7 @@ using namespace boost;
 
 class TcpClient : public std::enable_shared_from_this<TcpClient> {
  public:
-  TcpClient(asio::io_context& ioContext,
+  TcpClient(asio::io_service& ioContext,
             const std::string& host,
             const std::string& port) : m_socket(ioContext) {
     asio::ip::tcp::resolver resolver(ioContext);
