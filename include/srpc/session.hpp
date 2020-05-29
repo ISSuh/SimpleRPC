@@ -20,15 +20,10 @@ namespace srpc {
 template<typename T>
 class Session : public std::enable_shared_from_this<Session<T>> {
  public:
-  explicit Session(boost::asio::io_service* ioContext, std::shared_ptr<T> system)
-      : m_socket(*ioContext),
-        m_system(system.get()) {}
+  explicit Session(boost::asio::io_service& ioContext, T* system)
+      : m_socket(ioContext),
+        m_system(system) {}
   ~Session() = default;
-
-  void registAsyncAcceptHandler() {}
-  void registAsyncConnectHandler() {}
-  void registAsyncReadHandler() {}
-  void registAsyncWriteHandler() {}
 
   void connectSession() {
     std::cout << "---connectSession---\n";
@@ -40,7 +35,7 @@ class Session : public std::enable_shared_from_this<Session<T>> {
     char msg[100];
     m_socket.async_read_some(boost::asio::buffer(msg, 100),
                              std::bind(&Session::readHandler,
-                                      std::enable_shared_from_this<Session<T>>::shared_from_this(),
+                                      this,
                                       std::placeholders::_1, std::placeholders::_2));
   }
 
@@ -48,9 +43,9 @@ class Session : public std::enable_shared_from_this<Session<T>> {
     std::cout << "---write---\n";
 
     boost::asio::async_write(m_socket, boost::asio::buffer(test.c_str(), test.length()),
-                      std::bind(&Session::writeHandler,
-                      std::enable_shared_from_this<Session<T>>::shared_from_this(),
-                      std::placeholders::_1));
+                             std::bind(&Session::writeHandler,
+                                       this,
+                                       std::placeholders::_1));
   }
 
   boost::asio::ip::tcp::socket& getSocket() { return m_socket; }
@@ -80,7 +75,7 @@ class Session : public std::enable_shared_from_this<Session<T>> {
 
  private:
   boost::asio::ip::tcp::socket m_socket;
-  std::shared_ptr<T> m_system;
+  T* m_system;
 };
 
 }  // namespace srpc

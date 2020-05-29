@@ -55,8 +55,8 @@ class TcpClient : public std::enable_shared_from_this<TcpClient> {
     if (!error) {
       std::cout << "Write Succes! " << std::endl;
 
-      char msg[100];
-      m_socket.async_read_some(asio::buffer(msg, 100),
+      char msg[1024];
+      m_socket.async_read_some(asio::buffer(msg, 1024),
             std::bind(&TcpClient::readHandle, this, std::placeholders::_1, msg));
     } else {
       std::cout << "Write Fail! : " << error.message() << std::endl;
@@ -71,6 +71,8 @@ class TcpClient : public std::enable_shared_from_this<TcpClient> {
     } else {
       std::cout << "Read Fail! : " << error.message() << std::endl;
     }
+
+    m_socket.close();
   }
 
  private:

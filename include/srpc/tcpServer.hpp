@@ -28,20 +28,21 @@
 
 namespace srpc {
 
-class TcpServer : public std::enable_shared_from_this<TcpServer> {
+class TcpServer {
  public:
-  explicit TcpServer(boost::asio::io_service* ioContext, uint32_t port)
+  explicit TcpServer(boost::asio::io_service& ioContext, uint32_t port)
       : m_ioContext(ioContext),
-        m_acceptor(*ioContext, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)) {}
+        m_acceptor(ioContext, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)) {}
 
   ~TcpServer() = default;
 
   void accpet() {
-    Session<TcpServer>* newSession = new Session<TcpServer>(m_ioContext, shared_from_this());
+    Session<TcpServer>* newSession = new Session<TcpServer>(m_ioContext, this);
 
     m_acceptor.async_accept(newSession->getSocket(),
-                            std::bind(&TcpServer::acceptHandle, this, newSession,
-                                      boost::asio::placeholders::error));
+                            std::bind(&TcpServer::acceptHandle, this,
+                                      newSession,
+                                      std::placeholders::_1));
   }
   void updateRead() {}
   void updateWrite() {}
@@ -50,18 +51,21 @@ class TcpServer : public std::enable_shared_from_this<TcpServer> {
   void acceptHandle(Session<TcpServer>* session, const boost::system::error_code& error) {
     if (!error) {
       boost::uuids::uuid newUUID = boost::uuids::random_generator()();
-      std::cout << "Accept New Client - " << newUUID <<'\n';
+      std::cout << "Accept New Client - " << newUUID << " - " << m_sessionMap.size() << '\n';
 
       m_sessionMap[newUUID] = session;
 
-      accpet();
+      m_sessionMap[newUUID]->write(to_string(newUUID));
     } else {
       std::cout << "Accept Error!\n";
     }
+
+    accpet();
+
   }
 
  private:
-  boost::asio::io_service* m_ioContext;
+  boost::asio::io_service& m_ioContext;
   boost::asio::ip::tcp::acceptor m_acceptor;
 
   std::map<boost::uuids::uuid, Session<TcpServer>*> m_sessionMap;

@@ -25,17 +25,13 @@ namespace srpc {
 
 class ServerHandle {
  public:
-  explicit ServerHandle(uint32_t port) : m_server(&m_ioContext, port) {}
+  explicit ServerHandle(uint32_t port) : m_server(m_ioContext, port) {}
   ~ServerHandle() = default;
 
   void run() {
-    std::thread ioContextThread([&]() {
-      m_ioContext.run();
-    });
+    m_server.accpet();
 
-    while (m_running) {
-      usleep(1);
-    }
+    m_ioContext.run();
   }
 
  private:
