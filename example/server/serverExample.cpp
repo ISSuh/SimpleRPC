@@ -1,3 +1,9 @@
+/**
+ * 
+ *  Copyright:  Copyright (c) 2020, ISSuh
+ * 
+ */
+
 #include <iostream>
 
 #include <srpc.hpp>

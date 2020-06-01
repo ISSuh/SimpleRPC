@@ -15,8 +15,6 @@
 
 namespace srpc {
 
-using namespace boost;
-
 class ClientHandle {
  public:
   explicit ClientHandle(const std::string& host,
@@ -24,12 +22,22 @@ class ClientHandle {
 
   ~ClientHandle() = default;
 
-  void run() {
+  void connect() {
+    m_client.connect();
+
     m_ioContext.run();
   }
 
+  void terminate() {
+    m_client.close();
+  }
+
+  void request(const std::string& msg) {
+    m_client.request(msg);
+  }
+
  private:
-  asio::io_service m_ioContext;
+  boost::asio::io_service m_ioContext;
   // asio::io_context m_ioContext;
   TcpClient m_client;
 };

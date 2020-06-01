@@ -13,70 +13,44 @@
 
 #include <boost/asio.hpp>
 
+#include "session.hpp"
+
 namespace srpc {
 
-using namespace boost;
-
-class TcpClient : public std::enable_shared_from_this<TcpClient> {
+class TcpClient {
  public:
-  TcpClient(asio::io_service& ioContext,
+  TcpClient(boost::asio::io_service& ioContext,
             const std::string& host,
-            const std::string& port) : m_socket(ioContext) {
-    asio::ip::tcp::resolver resolver(ioContext);
-    asio::ip::tcp::resolver::query query(host, port);
-    asio::ip::tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
-
-    asio::async_connect(m_socket, endpoint_iterator,
-          std::bind(&TcpClient::connectHandle, this, std::placeholders::_1));
-
-    sleep(1);
-  }
+            const std::string& port) : m_ioContext(ioContext),
+                                       m_session(ioContext, this),
+                                       m_resolver(ioContext),
+                                       m_query(host, port) {}
 
   ~TcpClient() = default;
 
- private:
-  void connectHandle(const system::error_code& error) {
-    std::cout << "---connectHandle---\n";
-
-    if (!error) {
-      std::cout << "Connect Success! " << std::endl;
-
-      const std::string msg = "HelloServer!";
-      asio::async_write(m_socket, asio::buffer(msg.c_str(), msg.length()),
-            std::bind(&TcpClient::writeHandle, this, std::placeholders::_1));
-    } else {
-      std::cout << "Connect Fail! : " << error.message() << std::endl;
-    }
+  void connect() {
+    boost::asio::ip::tcp::resolver::iterator endpointIter = m_resolver.resolve(m_query);
+    m_session.connect(endpointIter);
   }
 
-  void writeHandle(const system::error_code& error) {
-    std::cout << "---writeHandler---\n";
-
-    if (!error) {
-      std::cout << "Write Succes! " << std::endl;
-
-      char msg[1024];
-      m_socket.async_read_some(asio::buffer(msg, 1024),
-            std::bind(&TcpClient::readHandle, this, std::placeholders::_1, msg));
-    } else {
-      std::cout << "Write Fail! : " << error.message() << std::endl;
-    }
+  void close() {
+    m_session.close();
   }
 
-  void readHandle(const system::error_code& error, const std::string& data) {
-    std::cout << "---readHandle---\n";
-
-    if (!error) {
-      std::cout << "Read Succes! : " << data << std::endl;
-    } else {
-      std::cout << "Read Fail! : " << error.message() << std::endl;
-    }
-
-    m_socket.close();
+  void request(const std::string& msg) {
+    m_session.write(msg);
   }
+
+  void updateConnect() {}
+  void updateRead() {}
+  void updateWrite() {}
 
  private:
-  asio::ip::tcp::socket m_socket;
+  boost::asio::io_service& m_ioContext;
+  Session<TcpClient> m_session;
+
+  boost::asio::ip::tcp::resolver m_resolver;
+  boost::asio::ip::tcp::resolver::query m_query;
 };
 
 }   // namespace srpc

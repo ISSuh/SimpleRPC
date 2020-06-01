@@ -44,6 +44,7 @@ class TcpServer {
                                       newSession,
                                       std::placeholders::_1));
   }
+
   void updateRead() {}
   void updateWrite() {}
 
@@ -54,14 +55,14 @@ class TcpServer {
       std::cout << "Accept New Client - " << newUUID << " - " << m_sessionMap.size() << '\n';
 
       m_sessionMap[newUUID] = session;
-
       m_sessionMap[newUUID]->write(to_string(newUUID));
+
+      m_sessionMap[newUUID]->read();
     } else {
       std::cout << "Accept Error!\n";
     }
 
     accpet();
-
   }
 
  private:

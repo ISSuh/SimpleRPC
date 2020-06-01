@@ -30,7 +30,6 @@ class ServerHandle {
 
   void run() {
     m_server.accpet();
-
     m_ioContext.run();
   }
 
