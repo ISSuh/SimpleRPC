@@ -4,8 +4,8 @@
  * 
  */
 
-#ifndef SRPC_SESSION_HPP_
-#define SRPC_SESSION_HPP_
+#ifndef SRPC_SERVERSESSION_HPP_
+#define SRPC_SERVERSESSION_HPP_
 
 #include <iostream>
 #include <string>
@@ -14,22 +14,26 @@
 #include <memory>
 
 #include <boost/asio.hpp>
+#include <boost/uuid/uuid.hpp>
+
+#include "Session.hpp"
 
 namespace srpc {
 
 template<typename T>
-class Session : public std::enable_shared_from_this<Session<T>> {
+class ServerSession : public Session {
  public:
-  explicit Session(boost::asio::io_service& ioContext, T* system)
-      : m_socket(ioContext),
+  explicit ServerSession(boost::asio::io_service& ioContext, T& system)
+      : Session(ioContext),
         m_system(system) {}
-  ~Session() = default;
+
+  ~ServerSession() = default;
 
   void connect(const boost::asio::ip::tcp::resolver::iterator& endpointIter) {
     std::cout << "---connectSession---\n";
 
-    boost::asio::async_connect(m_socket, endpointIter,
-                              std::bind(&Session::connectHandler,
+    boost::asio::async_connect(Session::getSocket(), endpointIter,
+                              std::bind(&ServerSession::connectHandler,
                                          this,
                                          std::placeholders::_1));
   }
@@ -38,8 +42,8 @@ class Session : public std::enable_shared_from_this<Session<T>> {
     std::cout << "---read---\n";
 
     char msg[100];
-    m_socket.async_read_some(boost::asio::buffer(msg, 100),
-                             std::bind(&Session::readHandler,
+    Session::getSocket().async_read_some(boost::asio::buffer(msg, 100),
+                             std::bind(&ServerSession::readHandler,
                                         this,
                                         std::placeholders::_1, std::placeholders::_2, msg));
   }
@@ -47,17 +51,17 @@ class Session : public std::enable_shared_from_this<Session<T>> {
   void write(const std::string& test) {
     std::cout << "---write---\n";
 
-    boost::asio::async_write(m_socket, boost::asio::buffer(test.c_str(), test.length()),
-                             std::bind(&Session::writeHandler,
+    boost::asio::async_write(Session::getSocket(), boost::asio::buffer(test.c_str(), test.length()),
+                             std::bind(&ServerSession::writeHandler,
                                         this,
                                         std::placeholders::_1));
   }
 
-  void close() {
+  void close() override {
     std::cout << "---close---\n";
 
     boost::system::error_code error;
-    m_socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both, error);
+    Session::getSocket().shutdown(boost::asio::ip::tcp::socket::shutdown_both, error);
 
     if (!error) {
       std::cout << "Socket Shutdown Success! " << std::endl;
@@ -65,10 +69,8 @@ class Session : public std::enable_shared_from_this<Session<T>> {
       std::cout << "Socket Shutdown Fail! " << std::endl;
     }
 
-    m_socket.close();
+    Session::getSocket().close();
   }
-
-  boost::asio::ip::tcp::socket& getSocket() { return m_socket; }
 
  private:
   void connectHandler(const boost::system::error_code& error) {
@@ -83,33 +85,34 @@ class Session : public std::enable_shared_from_this<Session<T>> {
     }
   }
 
-  void readHandler(const boost::system::error_code& error, size_t len, const char* data) {
+  void readHandler(const boost::system::error_code& error, size_t len, const char* data) override {
     std::cout << "---readHandler---\n";
 
     if (!error) {
       std::cout << "Read Success! : " << data << " / " << len << std::endl;
-      m_system->updateRead();
+      m_system.updateRead();
     } else {
+      m_system.unRegistMap(Session::getUUID());
       std::cout << "Read Fail! : " << error.message() << std::endl;
     }
   }
 
-  void writeHandler(const boost::system::error_code& error) {
+  void writeHandler(const boost::system::error_code& error) override {
     std::cout << "---writeHandler---\n";
 
     if (!error) {
       std::cout << "Write Success!" << std::endl;
-      m_system->updateWrite();
+      m_system.updateWrite();
     } else {
+      m_system.unRegistMap(Session::getUUID());
       std::cout << "Write Fail! : " << error.message() << std::endl;
     }
   }
 
  private:
-  boost::asio::ip::tcp::socket m_socket;
-  T* m_system;
+  T& m_system;
 };
 
 }  // namespace srpc
 
-#endif  // SRPC_SESSION_HPP_
+#endif  // SRPC_SERVERSESSION_HPP_

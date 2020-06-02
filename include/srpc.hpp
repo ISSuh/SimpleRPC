@@ -4,18 +4,19 @@
  * 
  */
 
-#ifndef SRPC_HPP
-#define SRPC_HPP
+#ifndef SRPC_HPP_
+#define SRPC_HPP_
 
-#include "srpc/common.hpp"
-#include "srpc/session.hpp"
-#include "srpc/server.hpp"
-#include "srpc/udpServer.hpp"
-#include "srpc/tcpServer.hpp"
-#include "srpc/serverHandle.hpp"
-#include "srpc/client.hpp"
-#include "srpc/tcpClient.hpp"
-#include "srpc/clientHandle.hpp"
-#include "srpc/message.hpp"
+#include "srpc/Common.hpp"
+#include "srpc/Message.hpp"
+#include "srpc/Session.hpp"
+#include "srpc/ServerSession.hpp"
+#include "srpc/ClientSession.hpp"
+#include "srpc/Server.hpp"
+#include "srpc/TcpServer.hpp"
+#include "srpc/ServerHandle.hpp"
+#include "srpc/Client.hpp"
+#include "srpc/TcpClient.hpp"
+#include "srpc/ClientHandle.hpp"
 
-#endif // SRPC_HPP
+#endif  // SRPC_HPP_

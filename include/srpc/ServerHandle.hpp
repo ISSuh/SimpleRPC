@@ -19,7 +19,7 @@
 
 #include <boost/asio.hpp>
 
-#include "tcpServer.hpp"
+#include "TcpServer.hpp"
 
 namespace srpc {
 
@@ -29,14 +29,12 @@ class ServerHandle {
   ~ServerHandle() = default;
 
   void run() {
-    m_server.accpet();
-    m_ioContext.run();
+    m_server.run();
   }
 
  private:
   boost::asio::io_service m_ioContext;
   TcpServer m_server;
-  std::atomic_bool m_running;
 };
 
 }  // namespace srpc

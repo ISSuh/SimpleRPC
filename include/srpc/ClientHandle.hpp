@@ -11,7 +11,7 @@
 
 #include <boost/asio.hpp>
 
-#include "tcpClient.hpp"
+#include "TcpClient.hpp"
 
 namespace srpc {
 
@@ -38,7 +38,6 @@ class ClientHandle {
 
  private:
   boost::asio::io_service m_ioContext;
-  // asio::io_context m_ioContext;
   TcpClient m_client;
 };
 

@@ -13,7 +13,7 @@
 
 #include <boost/asio.hpp>
 
-#include "session.hpp"
+#include "ClientSession.hpp"
 
 namespace srpc {
 
@@ -22,7 +22,7 @@ class TcpClient {
   TcpClient(boost::asio::io_service& ioContext,
             const std::string& host,
             const std::string& port) : m_ioContext(ioContext),
-                                       m_session(ioContext, this),
+                                       m_session(ioContext, *this),
                                        m_resolver(ioContext),
                                        m_query(host, port) {}
 
@@ -47,7 +47,7 @@ class TcpClient {
 
  private:
   boost::asio::io_service& m_ioContext;
-  Session<TcpClient> m_session;
+  ClientSession<TcpClient> m_session;
 
   boost::asio::ip::tcp::resolver m_resolver;
   boost::asio::ip::tcp::resolver::query m_query;
