@@ -39,8 +39,7 @@ class TcpServer {
   ~TcpServer() {}
 
   void accpet() {
-    std::unique_ptr<ServerSession<TcpServer>> newSession =
-                  std::unique_ptr<ServerSession<TcpServer>>(new ServerSession<TcpServer>(m_ioContext, *this));
+    std::unique_ptr<ServerSession<TcpServer>> newSession(new ServerSession<TcpServer>(m_ioContext, *this));
 
     m_acceptor.async_accept(newSession->getSocket(),
                             std::bind(&TcpServer::acceptHandle, this,
@@ -75,7 +74,7 @@ class TcpServer {
   }
 
  private:
-  void acceptHandle(ServerSession<TcpServer>&& session, const boost::system::error_code& error) {
+  void acceptHandle(ServerSession<TcpServer> session, const boost::system::error_code& error) {
     if (!error) {
       boost::uuids::uuid newUUID = boost::uuids::random_generator()();
       std::cout << "Accept New Client - " << newUUID << " - " << m_sessionMap.size() << '\n';
