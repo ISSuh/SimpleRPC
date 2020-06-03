@@ -39,11 +39,11 @@ class TcpServer {
   ~TcpServer() {}
 
   void accpet() {
-    std::unique_ptr<ServerSession<TcpServer>> newSession(new ServerSession<TcpServer>(m_ioContext, *this));
+    ServerSession<TcpServer>* newSession = new ServerSession<TcpServer>(m_ioContext, *this);
 
     m_acceptor.async_accept(newSession->getSocket(),
                             std::bind(&TcpServer::acceptHandle, this,
-                                      std::move(newSession),
+                                      newSession,
                                       std::placeholders::_1));
   }
 
@@ -57,7 +57,7 @@ class TcpServer {
         iter.second->read();
       }
 
-      sleep(1);
+      usleep(100000);
     }
 
     if (t.joinable()) {
@@ -69,17 +69,16 @@ class TcpServer {
   void updateWrite() {}
   void unRegistMap(const boost::uuids::uuid& uuid) {
     m_sessionMap[uuid].release();
-
     m_sessionMap.erase(uuid);
   }
 
  private:
-  void acceptHandle(ServerSession<TcpServer> session, const boost::system::error_code& error) {
+  void acceptHandle(ServerSession<TcpServer>* session, const boost::system::error_code& error) {
     if (!error) {
       boost::uuids::uuid newUUID = boost::uuids::random_generator()();
       std::cout << "Accept New Client - " << newUUID << " - " << m_sessionMap.size() << '\n';
 
-      m_sessionMap[newUUID] = std::move(session);
+      m_sessionMap.insert(std::make_pair(newUUID,  session));
       m_sessionMap[newUUID]->setUUID(newUUID);
 
       m_sessionMap[newUUID]->write(to_string(newUUID));

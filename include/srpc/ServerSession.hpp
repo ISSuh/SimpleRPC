@@ -15,6 +15,7 @@
 
 #include <boost/asio.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 #include "Session.hpp"
 
@@ -89,7 +90,7 @@ class ServerSession : public Session {
     std::cout << "---readHandler---\n";
 
     if (!error) {
-      std::cout << "Read Success! : " << data << " / " << len << std::endl;
+      std::cout << "Read Success! : " << data << " / " << len << " - " << Session::getUUID() << std::endl;
       m_system.updateRead();
     } else {
       m_system.unRegistMap(Session::getUUID());
