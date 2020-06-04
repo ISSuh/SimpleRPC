@@ -19,14 +19,22 @@
 
 #include <boost/asio.hpp>
 
+#include "Common.hpp"
 #include "TcpServer.hpp"
 
 namespace srpc {
 
 class ServerHandle {
  public:
-  explicit ServerHandle(uint32_t port) : m_server(m_ioContext, port) {}
+  explicit ServerHandle(ProtocolType protocolType, FunctionType funcType) : m_server(m_ioContext) {
+    
+  }
+
   ~ServerHandle() = default;
+
+  void setServer(const uint32_t port) {
+    configure(port);
+  }
 
   void run() {
     m_server.run();

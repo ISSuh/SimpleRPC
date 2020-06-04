@@ -4,11 +4,17 @@
  * 
  */
 
-#ifndef SRPC_CLIENT_HPP
-#define SRPC_CLIENT_HPP
+#ifndef SRPC_CLIENT_HPP_
+#define SRPC_CLIENT_HPP_
 
 namespace srpc {
 
-} // srpc
+class Client {
+ public:
+  Client() = default;
+  virtual ~Client() {}
+};
 
-#endif
+}  // namespace srpc
+
+#endif  // SRPC_CLIENT_HPP_

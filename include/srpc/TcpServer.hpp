@@ -28,23 +28,17 @@
 
 namespace srpc {
 
-class TcpServer {
+class TcpServer : public Server {
   using UniqueSessionPtr = std::unique_ptr<ServerSession<TcpServer>>;
 
  public:
-  explicit TcpServer(boost::asio::io_service& ioContext, const uint32_t port)
-      : m_ioContext(ioContext),
-        m_acceptor(ioContext, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)) {}
-
+  explicit TcpServer(boost::asio::io_service& ioContext) : m_ioContext(ioContext) {}
   ~TcpServer() {}
 
-  void accpet() {
-    ServerSession<TcpServer>* newSession = new ServerSession<TcpServer>(m_ioContext, *this);
+  void configure(const uint32_t port) {
+    m_acceptor = new boost::asio::ip::tcp::acceptor(m_ioContext,
+                                             boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port));
 
-    m_acceptor.async_accept(newSession->getSocket(),
-                            std::bind(&TcpServer::acceptHandle, this,
-                                      newSession,
-                                      std::placeholders::_1));
   }
 
   void run() {
@@ -73,14 +67,24 @@ class TcpServer {
   }
 
  private:
+  void accpet() {
+    ServerSession<TcpServer>* newSession = new ServerSession<TcpServer>(m_ioContext, *this);
+
+    m_acceptor.async_accept(newSession->getSocket(),
+                            std::bind(&TcpServer::acceptHandle, this,
+                                      newSession,
+                                      std::placeholders::_1));
+  }
+
   void acceptHandle(ServerSession<TcpServer>* session, const boost::system::error_code& error) {
     if (!error) {
       boost::uuids::uuid newUUID = boost::uuids::random_generator()();
       std::cout << "Accept New Client - " << newUUID << " - " << m_sessionMap.size() << '\n';
 
-      m_sessionMap.insert(std::make_pair(newUUID,  session));
-      m_sessionMap[newUUID]->setUUID(newUUID);
+      m_sessionMap.insert(std::make_pair(newUUID, session));
+      std::cout << m_sessionMap[newUUID].get() << '\n';
 
+      m_sessionMap[newUUID]->setUUID(newUUID);
       m_sessionMap[newUUID]->write(to_string(newUUID));
     } else {
       std::cout << "Accept Error!\n";
@@ -91,7 +95,7 @@ class TcpServer {
 
  private:
   boost::asio::io_service& m_ioContext;
-  boost::asio::ip::tcp::acceptor m_acceptor;
+  boost::asio::ip::tcp::acceptor* m_acceptor = nullptr;
 
   std::map<boost::uuids::uuid, std::unique_ptr<ServerSession<TcpServer>>> m_sessionMap;
 

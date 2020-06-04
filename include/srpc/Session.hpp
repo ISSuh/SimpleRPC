@@ -20,6 +20,8 @@ namespace srpc {
 
 class Session {
  public:
+  virtual ~Session() = default;
+
   virtual void connect(const boost::asio::ip::tcp::resolver::iterator& endpointIter) {}
   virtual void read() {}
   virtual void write(const std::string& test) {}
@@ -32,7 +34,6 @@ class Session {
 
  protected:
   explicit Session(boost::asio::io_service& ioContext) : m_socket(ioContext) {}
-  virtual ~Session() = default;
 
   virtual void connectHandler(const boost::system::error_code& error) {}
   virtual void readHandler(const boost::system::error_code& error, size_t len, const char* data) = 0;

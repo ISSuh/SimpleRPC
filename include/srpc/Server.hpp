@@ -4,17 +4,17 @@
  * 
  */
 
-#ifndef SRPC_SERVER_HPP
-#define SRPC_SERVER_HPP
+#ifndef SRPC_SERVER_HPP_
+#define SRPC_SERVER_HPP_
+
+namespace srpc {
 
 class Server {
  public:
-  virtual ~Server() = default;
-
- protected:
   Server() = default;
-  
-  virtual void accept() = 0;
+  virtual ~Server() {}
 };
 
-#endif // SRPC_SERVER_HPP
+}  // namespace srpc
+
+#endif  // SRPC_SERVER_HPP_

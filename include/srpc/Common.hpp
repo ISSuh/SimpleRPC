@@ -9,6 +9,21 @@
 
 namespace srpc {
 
+using IoService = boost::asio::io_service;
+using TcpSocket = boost::asio::ip::tcp::socket;
+using Uuid = boost::uuids::uuid;
+
+
+enum class ProtocolType : uint8_t {
+  TCP,
+  UDP
+};
+
+enum class FunctionType : uint8_t {
+  SYNC,
+  ASYNC
+};
+
 } // srpc
 
 #endif
