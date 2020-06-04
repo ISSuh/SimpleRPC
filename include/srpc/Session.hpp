@@ -16,32 +16,34 @@
 #include <boost/asio.hpp>
 #include <boost/uuid/uuid.hpp>
 
+#include "Common.hpp"
+
 namespace srpc {
 
 class Session {
  public:
   virtual ~Session() = default;
 
-  virtual void connect(const boost::asio::ip::tcp::resolver::iterator& endpointIter) {}
+  virtual void connect(const TcpResolverIterator& endpointIter) {}
   virtual void read() {}
   virtual void write(const std::string& test) {}
   virtual void close() = 0;
 
-  virtual boost::asio::ip::tcp::socket& getSocket() { return m_socket; }
+  virtual TcpSocket& getSocket() { return m_socket; }
 
-  virtual void setUUID(const boost::uuids::uuid& uuid ) { m_uuid = uuid; }
-  virtual const boost::uuids::uuid& getUUID() const { return m_uuid; }
+  virtual void setUUID(const Uuid& uuid ) { m_uuid = uuid; }
+  virtual const Uuid& getUUID() const { return m_uuid; }
 
  protected:
-  explicit Session(boost::asio::io_service& ioContext) : m_socket(ioContext) {}
+  explicit Session(IoService& ioContext) : m_socket(ioContext) {}
 
-  virtual void connectHandler(const boost::system::error_code& error) {}
-  virtual void readHandler(const boost::system::error_code& error, size_t len, const char* data) = 0;
-  virtual void writeHandler(const boost::system::error_code& error)  = 0;
+  virtual void connectHandler(const ErrorCode& error) {}
+  virtual void readHandler(const ErrorCode& error, size_t len, const char* data) = 0;
+  virtual void writeHandler(const ErrorCode& error)  = 0;
 
  private:
-  boost::asio::ip::tcp::socket m_socket;
-  boost::uuids::uuid m_uuid;
+  TcpSocket m_socket;
+  Uuid m_uuid;
 };
 
 }  // namespace srpc

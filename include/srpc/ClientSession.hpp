@@ -16,6 +16,7 @@
 #include <boost/asio.hpp>
 #include <boost/uuid/uuid.hpp>
 
+#include "Common.hpp"
 #include "Session.hpp"
 
 namespace srpc {
@@ -23,16 +24,16 @@ namespace srpc {
 template<typename T>
 class ClientSession : public Session {
  public:
-  explicit ClientSession(boost::asio::io_service& ioContext, T& system)
+  explicit ClientSession(IoService& ioContext, T& system)
       : Session(ioContext),
         m_system(system) {}
 
   ~ClientSession() = default;
 
-  void connect(const boost::asio::ip::tcp::resolver::iterator& endpointIter) {
+  void connect(const TcpResolverIterator& endpointIter) {
     std::cout << "---connectSession---\n";
 
-    boost::asio::async_connect(Session::getSocket(), endpointIter,
+    asio::async_connect(Session::getSocket(), endpointIter,
                               std::bind(&ClientSession::connectHandler,
                                          this,
                                          std::placeholders::_1));
@@ -42,7 +43,7 @@ class ClientSession : public Session {
     std::cout << "---read---\n";
 
     char msg[100];
-    Session::getSocket().async_read_some(boost::asio::buffer(msg, 100),
+    Session::getSocket().async_read_some(asio::buffer(msg, 100),
                              std::bind(&ClientSession::readHandler,
                                         this,
                                         std::placeholders::_1, std::placeholders::_2, msg));
@@ -51,7 +52,7 @@ class ClientSession : public Session {
   void write(const std::string& test) {
     std::cout << "---write---\n";
 
-    boost::asio::async_write(Session::getSocket(), boost::asio::buffer(test.c_str(), test.length()),
+    asio::async_write(Session::getSocket(), asio::buffer(test.c_str(), test.length()),
                              std::bind(&ClientSession::writeHandler,
                                         this,
                                         std::placeholders::_1));
@@ -60,8 +61,8 @@ class ClientSession : public Session {
   void close() override {
     std::cout << "---close---\n";
 
-    boost::system::error_code error;
-    Session::getSocket().shutdown(boost::asio::ip::tcp::socket::shutdown_both, error);
+    ErrorCode error;
+    Session::getSocket().shutdown(TcpSocket::shutdown_both, error);
 
     if (!error) {
       std::cout << "Socket Shutdown Success! " << std::endl;
@@ -73,7 +74,7 @@ class ClientSession : public Session {
   }
 
  private:
-  void connectHandler(const boost::system::error_code& error) {
+  void connectHandler(const ErrorCode& error) {
     std::cout << "---connectHandle---\n";
 
     if (!error) {
@@ -85,7 +86,7 @@ class ClientSession : public Session {
     }
   }
 
-  void readHandler(const boost::system::error_code& error, size_t len, const char* data) override {
+  void readHandler(const ErrorCode& error, size_t len, const char* data) override {
     std::cout << "---readHandler---\n";
 
     if (!error) {
@@ -96,7 +97,7 @@ class ClientSession : public Session {
     }
   }
 
-  void writeHandler(const boost::system::error_code& error) override {
+  void writeHandler(const ErrorCode& error) override {
     std::cout << "---writeHandler---\n";
 
     if (!error) {
