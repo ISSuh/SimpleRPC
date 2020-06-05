@@ -27,6 +27,8 @@ using TcpResolverIterator = boost::asio::ip::tcp::resolver::iterator;
 
 using Uuid = boost::uuids::uuid;
 
+template<typename T>
+void UNUSED(T&&) {}
 
 enum class ProtocolType : uint8_t {
   TCP,
