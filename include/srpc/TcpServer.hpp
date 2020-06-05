@@ -30,16 +30,14 @@ namespace srpc {
 
 class TcpServer : public Server {
  public:
-  explicit TcpServer(IoService& ioContext) : m_ioContext(ioContext) {}
+  TcpServer() {}
   ~TcpServer() {}
 
   void configure(const uint32_t port) {
-    m_acceptor = new TcpAcceptor(m_ioContext,
-                                             TcpEndPoint(boost::asio::ip::tcp::v4(), port));
-
+    m_acceptor = new TcpAcceptor(m_ioContext, TcpEndPoint(asio::ip::tcp::v4(), port));
   }
 
-  void run() {
+  void run() override {
     accpet();
 
     std::thread t([&](){ m_ioContext.run(); });
@@ -57,24 +55,25 @@ class TcpServer : public Server {
     }
   }
 
-  void updateRead() {}
-  void updateWrite() {}
+  void updateRead() override {}
+  void updateWrite() override {}
+
   void unRegistMap(const Uuid& uuid) {
     m_sessionMap[uuid].release();
     m_sessionMap.erase(uuid);
   }
 
  private:
-  void accpet() {
+  void accpet() override {
     ServerSession<TcpServer>* newSession = new ServerSession<TcpServer>(m_ioContext, *this);
 
-    m_acceptor.async_accept(newSession->getSocket(),
-                            std::bind(&TcpServer::acceptHandle, this,
-                                      newSession,
-                                      std::placeholders::_1));
+    m_acceptor->async_accept(newSession->getSocket(),
+                             std::bind(&TcpServer::acceptHandle, this,
+                                      std::placeholders::_1,
+                                      newSession));
   }
 
-  void acceptHandle(ServerSession<TcpServer>* session, const boost::system::error_code& error) {
+  void acceptHandle(const ErrorCode& error, ServerSession<TcpServer>* session) {
     if (!error) {
       Uuid newUUID = boost::uuids::random_generator()();
       std::cout << "Accept New Client - " << newUUID << " - " << m_sessionMap.size() << '\n';
@@ -92,7 +91,7 @@ class TcpServer : public Server {
   }
 
  private:
-  IoService& m_ioContext;
+  IoService m_ioContext;
   TcpAcceptor* m_acceptor = nullptr;
 
   std::map<Uuid, std::unique_ptr<ServerSession<TcpServer>>> m_sessionMap;

@@ -7,47 +7,44 @@
 #ifndef SRPC_CLIENTHANDLE_HPP_
 #define SRPC_CLIENTHANDLE_HPP_
 
+#include <iostream>
 #include <string>
-#include <thread>
+#include <memory>
+#include <utility>
 
 #include <boost/asio.hpp>
 
-#include "TcpClient.hpp"
+#include "Common.hpp"
+#include "Creator.hpp"
+#include "Client.hpp"
 
 namespace srpc {
 
 class ClientHandle {
  public:
-  ClientHandle() : m_client(m_ioContext) {
-    m_ioContextRunner = std::thread(&ClientHandle::contextRunner, this);
-  }
+  explicit ClientHandle(ProtocolType protocolType, FunctionType funcType)
+    : m_client(std::move(m_creator.createSystem(protocolType, funcType))) {}
 
-  ~ClientHandle() {
-    m_ioContextRunner.join();
-  }
+  ~ClientHandle() {}
 
   void connect(const std::string& host, const std::string& port) {
-    m_client.connect(host, port);
+    m_client->connect(host, port);
   }
 
   void terminate() {
-    m_client.close();
+    m_client->close();
   }
 
   void request(const std::string& msg) {
-    m_client.request(msg);
+    m_client->request(msg);
   }
 
  private:
-  void contextRunner() {
-    m_ioContext.run();
-  }
+  ProtocolType m_protocolType;
+  FunctionType m_funcType;
 
- private:
-  boost::asio::io_service m_ioContext;
-  TcpClient m_client;
-
-  std::thread m_ioContextRunner;
+  ClientCreator m_creator;
+  std::unique_ptr<Client> m_client;
 };
 
 }   // namespace srpc

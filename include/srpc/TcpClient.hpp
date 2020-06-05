@@ -10,6 +10,7 @@
 #include <iostream>
 #include <string>
 #include <functional>
+#include <thread>
 
 #include <boost/asio.hpp>
 
@@ -21,11 +22,13 @@ namespace srpc {
 
 class TcpClient : public Client {
  public:
-  TcpClient(IoService& ioContext) : m_ioContext(ioContext),
-                                    m_session(ioContext, *this),
-                                    m_resolver(ioContext) {}
+  TcpClient() : m_session(m_ioContext, *this), m_resolver(m_ioContext) {
+    m_ioContextRunner = std::thread(&TcpClient::contextRunner, this);
+  }
 
-  ~TcpClient() = default;
+  ~TcpClient() {
+    m_ioContextRunner.join();
+  }
 
   void connect(const std::string& host, const std::string& port) {
     TcpResolverQuery clientQuery(host, port);
@@ -47,7 +50,13 @@ class TcpClient : public Client {
   void updateWrite() {}
 
  private:
-  IoService& m_ioContext;
+  void contextRunner() {
+    m_ioContext.run();
+  }
+
+ private:
+  IoService m_ioContext;
+  std::thread m_ioContextRunner;
   ClientSession<TcpClient> m_session;
 
   TcpResolver m_resolver;

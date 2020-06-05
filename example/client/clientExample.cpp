@@ -11,7 +11,7 @@
 int main(int argc, char* argv[]) {
   std::cout << "SimpleRPC Client Example\n";
 
-  srpc::ClientHandle c;
+  srpc::ClientHandle c(srpc::ProtocolType::TCP, srpc::FunctionType::ASYNC);
   c.connect("127.0.0.1", "33669");
 
   int i = 0;

@@ -7,7 +7,7 @@ PROJECT (SimpleRPC)
 # SET( CMAKE_CXX_COMPILER g++ )
 SET( CMAKE_CXX_STANDARD 11)
 SET( CMAKE_CXX_STANDARD_REQUIRED ON )
-ADD_COMPILE_OPTIONS ( -g -Wall )
+ADD_COMPILE_OPTIONS ( -g -Wall -Werror -Wextra)
 
 #-------------------------------------------------------------------------------
 # Set Third party Library

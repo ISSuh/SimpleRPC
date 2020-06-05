@@ -9,40 +9,40 @@
 
 #include <iostream>
 #include <string>
-#include <vector>
-#include <map>
 #include <memory>
-#include <thread>
-#include <mutex>
-#include <condition_variable>
-#include <atomic>
+#include <utility>
 
 #include <boost/asio.hpp>
 
 #include "Common.hpp"
-#include "TcpServer.hpp"
+#include "Creator.hpp"
+#include "Server.hpp"
 
 namespace srpc {
 
 class ServerHandle {
  public:
-  explicit ServerHandle(ProtocolType protocolType, FunctionType funcType) : m_server(m_ioContext) {
-    
-  }
+  explicit ServerHandle(ProtocolType protocolType, FunctionType funcType)
+    : m_protocolType(protocolType),
+      m_funcType(funcType),
+      m_server(std::move(m_creator.createSystem(protocolType, funcType))) {}
 
   ~ServerHandle() = default;
 
   void setServer(const uint32_t port) {
-    configure(port);
+    m_server->configure(port);
   }
 
   void run() {
-    m_server.run();
+    m_server->run();
   }
 
  private:
-  boost::asio::io_service m_ioContext;
-  TcpServer m_server;
+  ProtocolType m_protocolType;
+  FunctionType m_funcType;
+
+  ServerCreator m_creator;
+  std::unique_ptr<Server> m_server;
 };
 
 }  // namespace srpc
