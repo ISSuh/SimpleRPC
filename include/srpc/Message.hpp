@@ -27,9 +27,7 @@ class Message {
   ~Message() = default;
 
  private:
-  void makeMessage() {
-
-  }
+  void makeMessage() {}
 
  private:
   struct PacketHeader {

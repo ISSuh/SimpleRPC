@@ -24,4 +24,6 @@
 
 #include "srpc/Creator.hpp"
 
+#include "srpc/RPCService.hpp"
+
 #endif  // SRPC_HPP_

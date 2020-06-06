@@ -30,6 +30,10 @@ using Uuid = boost::uuids::uuid;
 template<typename T>
 void UNUSED(T&&) {}
 
+enum class Status : uint8_t {
+  OK
+};
+
 enum class ProtocolType : uint8_t {
   TCP,
   UDP
