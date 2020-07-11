@@ -55,8 +55,13 @@ class TcpServer : public Server {
     }
   }
 
-  void updateRead() override {}
-  void updateWrite() override {}
+  void updateRead(const Uuid& uuid) override {
+    std::cout << "---updateRead--- " << to_string(uuid) << std::endl;
+  }
+
+  void updateWrite(const Uuid& uuid) override {
+    std::cout << "---updateWrite--- " << to_string(uuid) << std::endl;
+  }
 
   void unRegistMap(const Uuid& uuid) {
     m_sessionMap[uuid].release();

@@ -16,20 +16,17 @@ int sum(int a, int b) {
   return a+b;
 }
 
-class ExampleUserService final : public srpc::RPCServcie {
-};
-
 int main(int argc, char* argv[]) {
   std::cout << "SimpleRPC Server Example\n";
 
   srpc::ServerHandle s(srpc::ProtocolType::TCP, srpc::FunctionType::ASYNC);
   s.setServer(33669);
 
-  ExampleUserService rpcService;
-  rpcService.addRPCFunction<void>("Hello", Hello);
-  rpcService.addRPCFunction<int>("sum", sum);
+  // ExampleUserService rpcService;
+  // rpcService.addRPCFunction<void>("Hello", Hello);
+  // rpcService.addRPCFunction<int>("sum", sum);
 
-  s.addRPCService(rpcService);
+  // s.addRPCService(rpcService);
 
   s.run();
 }

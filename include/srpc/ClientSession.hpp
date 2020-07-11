@@ -42,15 +42,15 @@ class ClientSession : public Session {
   void read() {
     std::cout << "---read---\n";
 
-    char msg[100];
-    Session::getSocket().async_read_some(asio::buffer(msg, 100),
+    char msg[1024];
+    Session::getSocket().async_read_some(asio::buffer(msg, 1024),
                              std::bind(&ClientSession::readHandler,
                                         this,
                                         std::placeholders::_1, std::placeholders::_2, msg));
   }
 
   void write(const std::string& test) {
-    std::cout << "---write---\n";
+    std::cout << "---write--- " << test << std::endl;
 
     asio::async_write(Session::getSocket(), asio::buffer(test.c_str(), test.length()),
                              std::bind(&ClientSession::writeHandler,

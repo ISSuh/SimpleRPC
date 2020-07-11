@@ -43,8 +43,8 @@ class ServerSession : public Session {
   void read() {
     std::cout << "---read---\n";
 
-    char msg[100];
-    Session::getSocket().async_read_some(asio::buffer(msg, 100),
+    char msg[1024];
+    Session::getSocket().async_read_some(asio::buffer(msg, 1024),
                              std::bind(&ServerSession::readHandler,
                                         this,
                                         std::placeholders::_1, std::placeholders::_2, msg));
@@ -92,7 +92,7 @@ class ServerSession : public Session {
 
     if (!error) {
       std::cout << "Read Success! : " << data << " / " << len << " - " << Session::getUUID() << std::endl;
-      m_system.updateRead();
+      m_system.updateRead(Session::getUUID());
     } else {
       m_system.unRegistMap(Session::getUUID());
       std::cout << "Read Fail! : " << error.message() << std::endl;
@@ -104,7 +104,7 @@ class ServerSession : public Session {
 
     if (!error) {
       std::cout << "Write Success!" << std::endl;
-      m_system.updateWrite();
+      m_system.updateWrite(Session::getUUID());
     } else {
       m_system.unRegistMap(Session::getUUID());
       std::cout << "Write Fail! : " << error.message() << std::endl;

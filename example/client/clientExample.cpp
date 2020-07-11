@@ -21,5 +21,8 @@ int main(int argc, char* argv[]) {
     sleep(1);
   }
 
+
+  // c.request("add", )
+
   c.terminate();
 }

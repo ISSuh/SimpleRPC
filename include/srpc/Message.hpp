@@ -46,6 +46,7 @@ class Message {
     uint8_t offset;
     std::vector<char> serviceName;
     std::vector<char> rpcName;
+    std::vector<char> serializedJson;
   };
 
   struct Packet_t {

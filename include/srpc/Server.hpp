@@ -20,8 +20,8 @@ class Server {
   virtual void configure(const uint32_t port) = 0;
   virtual void run() = 0;
 
-  virtual void updateRead() = 0;
-  virtual void updateWrite() = 0;
+  virtual void updateRead(const Uuid& uuid) = 0;
+  virtual void updateWrite(const Uuid& uuid) = 0;
 
  protected:
   virtual void accpet() = 0;
