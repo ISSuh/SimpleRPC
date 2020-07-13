@@ -17,7 +17,6 @@ int main(int argc, char* argv[]) {
   int i = 0;
   while (1) {
     c.request(std::to_string(i));
-    ++i;
     sleep(1);
   }
 

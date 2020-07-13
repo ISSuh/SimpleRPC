@@ -45,12 +45,21 @@ class TcpClient : public Client {
     m_session.write(msg);
   }
 
-  void updateConnect() {}
-  void updateRead() {}
-  void updateWrite() {}
+  void updateConnect() {
+    std::cout << "---updateConnect---\n";
+  }
+
+  void updateRead() override {
+    std::cout << "---updateRead---\n";
+  }
+
+  void updateWrite() override {
+    std::cout << "---updateWrite---\n";
+  }
 
  private:
   void contextRunner() {
+    IoService::work worker(m_ioContext);
     m_ioContext.run();
   }
 

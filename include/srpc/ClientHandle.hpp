@@ -40,11 +40,15 @@ class ClientHandle {
   }
 
  private:
+  IoService m_ioContext;
+
   ProtocolType m_protocolType;
   FunctionType m_funcType;
 
   ClientCreator m_creator;
   std::unique_ptr<Client> m_client;
+
+  std::thread t;
 };
 
 }   // namespace srpc

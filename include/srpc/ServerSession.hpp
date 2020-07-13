@@ -41,10 +41,10 @@ class ServerSession : public Session {
   }
 
   void read() {
-    std::cout << "---read---\n";
+    std::cout << "[" << to_string(getUUID()) << "] ---read---\n";
 
-    char msg[1024];
-    Session::getSocket().async_read_some(asio::buffer(msg, 1024),
+    char msg[100];
+    asio::async_read(Session::getSocket(), asio::buffer(msg, 100),
                              std::bind(&ServerSession::readHandler,
                                         this,
                                         std::placeholders::_1, std::placeholders::_2, msg));
@@ -53,7 +53,7 @@ class ServerSession : public Session {
   void write(const std::string& test) {
     std::cout << "---write---\n";
 
-    asio::async_write(Session::getSocket(), asio::buffer(test.c_str(), test.length()),
+    asio::async_write(Session::getSocket(), asio::buffer(test.c_str(), test.size()),
                              std::bind(&ServerSession::writeHandler,
                                         this,
                                         std::placeholders::_1));

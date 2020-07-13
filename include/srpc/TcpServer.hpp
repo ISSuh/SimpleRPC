@@ -40,7 +40,10 @@ class TcpServer : public Server {
   void run() override {
     accpet();
 
-    std::thread t([&](){ m_ioContext.run(); });
+    std::thread t([&](){ 
+      IoService::work worker(m_ioContext);
+      m_ioContext.run();
+    });
 
     while (true) {
       for (const auto& iter : m_sessionMap) {
