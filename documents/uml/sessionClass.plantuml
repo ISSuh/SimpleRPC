@@ -1,0 +1,44 @@
+@startuml SimpleRPC_Class_Architecture_Session
+
+scale 1280 width
+scale 720 height
+
+class BaseSession {
+  {method} +write()
+  {method} +read()
+}
+
+class AsyncSession {
+  {method} +write()
+  {method} +read()
+
+  {method} +writeHandler()
+  {method} +readHandler()
+}
+
+class SyncSession {
+  {method} +write()
+  {method} +read()
+}
+
+class Session {
+  {field} -socket
+  {field} -uuid
+  {field} -BaseSession*
+
+  {method} +Session(BaseSession*)
+  {method} +write()
+  {method} +read()
+  
+  {method} +setUUID()
+  {method} +getUUID()
+  {method} +getSocket()
+}
+
+BaseSession <|-down- AsyncSession
+BaseSession <|-down- SyncSession
+
+SyncSession -down-> Session
+AsyncSession -down-> Session
+
+@enduml
