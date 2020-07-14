@@ -38,7 +38,7 @@ class Session {
   explicit Session(IoService& ioContext) : m_socket(ioContext) {}
 
   virtual void connectHandler(const ErrorCode& error) { UNUSED(error); }
-  virtual void readHandler(const ErrorCode& error, size_t len, const char* data) = 0;
+  virtual void readHandler(const ErrorCode& error, size_t len) = 0;
   virtual void writeHandler(const ErrorCode& error) = 0;
 
  private:

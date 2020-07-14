@@ -43,17 +43,16 @@ class ServerSession : public Session {
   void read() {
     std::cout << "[" << to_string(getUUID()) << "] ---read---\n";
 
-    char msg[100];
-    asio::async_read(Session::getSocket(), asio::buffer(msg, 100),
+    Session::getSocket().async_read_some(asio::buffer(msg, 1024),
                              std::bind(&ServerSession::readHandler,
                                         this,
-                                        std::placeholders::_1, std::placeholders::_2, msg));
+                                        std::placeholders::_1, std::placeholders::_2));
   }
 
   void write(const std::string& test) {
     std::cout << "---write---\n";
 
-    asio::async_write(Session::getSocket(), asio::buffer(test.c_str(), test.size()),
+    asio::async_write(Session::getSocket(), asio::buffer(test, test.length()),
                              std::bind(&ServerSession::writeHandler,
                                         this,
                                         std::placeholders::_1));
@@ -87,11 +86,11 @@ class ServerSession : public Session {
     }
   }
 
-  void readHandler(const ErrorCode& error, size_t len, const char* data) override {
+  void readHandler(const ErrorCode& error, size_t len) override {
     std::cout << "---readHandler---\n";
 
     if (!error) {
-      std::cout << "Read Success! : " << data << " / " << len << " - " << Session::getUUID() << std::endl;
+      std::cout << "Read Success! : " << msg << " / " << len << " - " << Session::getUUID() << std::endl;
       m_system.updateRead(Session::getUUID());
     } else {
       m_system.unRegistMap(Session::getUUID());
@@ -113,6 +112,8 @@ class ServerSession : public Session {
 
  private:
   T& m_system;
+
+  char msg[1024];
 };
 
 }  // namespace srpc

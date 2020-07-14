@@ -9,8 +9,9 @@ include_directories(
 #-------------------------------------------------------------------------------
 # Project files
 #-------------------------------------------------------------------------------
-SET( SOURCES
-    clientExample.cpp
+SET( EXAMPLE_SRC
+    clientExample
+    asioClientExample
 )
 
 #-------------------------------------------------------------------------------
@@ -18,6 +19,11 @@ SET( SOURCES
 #-------------------------------------------------------------------------------
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY  ${BUILD_DIR_EXAMPLES} )
 
-add_executable(${PROJECT_NAME} ${SOURCES})
-target_link_libraries(${PROJECT_NAME} ${SRPC_LIBRARY} )
-set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "example")
+foreach(EXAMPLE_NAME ${EXAMPLE_SRC})
+
+  add_executable( ${EXAMPLE_NAME} ${EXAMPLE_NAME}.cpp )
+
+  target_link_libraries( ${EXAMPLE_NAME} ${SRPC_LIBRARY} )
+
+  set_property(TARGET ${EXAMPLE_NAME} PROPERTY FOLDER "example")
+endforeach()
