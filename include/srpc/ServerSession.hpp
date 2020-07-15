@@ -18,6 +18,7 @@
 #include <boost/uuid/uuid_io.hpp>
 
 #include "Common.hpp"
+#include "Message.hpp"
 #include "Session.hpp"
 
 namespace srpc {

@@ -17,6 +17,7 @@
 #include <boost/uuid/uuid.hpp>
 
 #include "Common.hpp"
+#include "Message.hpp"
 #include "Session.hpp"
 
 namespace srpc {
@@ -109,7 +110,7 @@ class ClientSession : public Session {
 
  private:
   T& m_system;
-
+  Message m_msg;
   char msg[1024];
 };
 
