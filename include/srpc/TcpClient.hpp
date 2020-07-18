@@ -69,10 +69,9 @@ class TcpClient : public Client {
  private:
   IoService m_ioContext;
   std::thread m_ioContextRunner;
-  
+
   TcpResolver m_resolver;
   ClientSession<TcpClient> m_session;
-  Message m_msg;
 };
 
 }   // namespace srpc

@@ -85,15 +85,16 @@ class TcpServer : public Server {
   void acceptHandle(const ErrorCode& error, ServerSession<TcpServer>* session) {
     if (!error) {
       Uuid newUUID = boost::uuids::random_generator()();
-      std::cout << "Accept New Client - " << newUUID << " - " << m_sessionMap.size() << '\n';
-
       m_sessionMap.insert(std::make_pair(newUUID, session));
-      std::cout << m_sessionMap[newUUID].get() << '\n';
 
+      BOOST_LOG_TRIVIAL(info) << "Accept New Client - " << newUUID << " / " << m_sessionMap.size();
+
+      Message msg(Command::ACCEPT);
       m_sessionMap[newUUID]->setUUID(newUUID);
-      m_sessionMap[newUUID]->write(Command::ACCEPT, to_string(newUUID));
+      m_sessionMap[newUUID]->write(Command::ACCEPT, msg));
     } else {
-      std::cout << "Accept Error!\n";
+      BOOST_LOG_TRIVIAL(error) << "Accept Error! - " << error.message();
+      delete session;
     }
 
     accpet();
@@ -104,9 +105,6 @@ class TcpServer : public Server {
 
   TcpAcceptor* m_acceptor = nullptr;
   std::map<Uuid, std::unique_ptr<ServerSession<TcpServer>>> m_sessionMap;
-  Message m_msg;
-
-  std::atomic_bool m_running;
 };
 
 }   // namespace srpc

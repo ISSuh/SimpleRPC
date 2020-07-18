@@ -20,6 +20,7 @@
 #include <boost/log/trivial.hpp>
 
 #include "Common.hpp"
+#include "Message.hpp"
 #include "Session.hpp"
 
 namespace srpc {
@@ -53,7 +54,7 @@ class ClientSession : public Session {
                                          readHandler[cmd]);
   }
 
-  void write(Command cmd, const std::string& serialized) override {
+  void write(Command cmd, Message& msg) override {
     BOOST_LOG_TRIVIAL(info) << Session::getUUID() << ": Write - " << CommandToString(cmd);
 
     Session::getSocket().async_write_some(asio::buffer(serialized, serialized.length()),

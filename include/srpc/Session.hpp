@@ -17,6 +17,7 @@
 #include <boost/uuid/uuid.hpp>
 
 #include "Common.hpp"
+#include "Message.hpp"
 
 namespace srpc {
 
@@ -26,7 +27,7 @@ class Session {
 
   virtual void connect(const TcpResolverIterator& endpointIter) { UNUSED(endpointIter); }
   virtual void read(Command cmd) = 0;
-  virtual void write(Command cmd, const std::string& test) = 0;
+  virtual void write(Command cmd, Message msg) = 0;
   virtual void close() = 0;
 
   virtual TcpSocket& getSocket() { return m_socket; }

@@ -50,6 +50,7 @@ enum class FunctionType : uint8_t {
 };
 
 enum class Command : uint8_t {
+  NONE,
   CONNECT,
   ACCEPT,
   CLOSE,
