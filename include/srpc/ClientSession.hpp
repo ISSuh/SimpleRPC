@@ -13,12 +13,13 @@
 #include <utility>
 #include <functional>
 #include <memory>
+#include <atomic>
 
 #include <boost/asio.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <boost/log/trivial.hpp>
 
 #include "Common.hpp"
-#include "Message.hpp"
 #include "Session.hpp"
 
 namespace srpc {
@@ -28,12 +29,16 @@ class ClientSession : public Session {
  public:
   explicit ClientSession(IoService& ioContext, T& system)
       : Session(ioContext),
-        m_system(system) {}
+        m_system(system),
+        m_isConnected(false) {
+    registReadHandler();
+    registWriteHandler();
+  }
 
   ~ClientSession() = default;
 
   void connect(const TcpResolverIterator& endpointIter) {
-    std::cout << "---connectSession---\n";
+    BOOST_LOG_TRIVIAL(info) << "connectSession";
 
     asio::async_connect(Session::getSocket(), endpointIter,
                               std::bind(&ClientSession::connectHandler,
@@ -42,33 +47,36 @@ class ClientSession : public Session {
   }
 
   void read(Command cmd) override {
-    std::cout << "---read---\n";
+    BOOST_LOG_TRIVIAL(info) << Session::getUUID() << ": Read - " << CommandToString(cmd);
 
     Session::getSocket().async_read_some(asio::buffer(m_readBuff, MAX_LEN),
                                          readHandler[cmd]);
   }
 
-  void write(Command serialized, const std::string& serialized) override {
-    std::cout << "---write--- " << serialized << std::endl;
+  void write(Command cmd, const std::string& serialized) override {
+    BOOST_LOG_TRIVIAL(info) << Session::getUUID() << ": Write - " << CommandToString(cmd);
 
     Session::getSocket().async_write_some(asio::buffer(serialized, serialized.length()),
                                           writeHandler[cmd]);
   }
 
   void close() override {
-    std::cout << "---close---\n";
+    BOOST_LOG_TRIVIAL(info) << Session::getUUID() << ": Close";
 
     ErrorCode error;
     Session::getSocket().shutdown(TcpSocket::shutdown_both, error);
 
     if (!error) {
-      std::cout << "Socket Shutdown Success! " << std::endl;
+      BOOST_LOG_TRIVIAL(info) << Session::getUUID() << ": Session Shutdown Success!";
     } else {
-      std::cout << "Socket Shutdown Fail! " << std::endl;
+      BOOST_LOG_TRIVIAL(error) << Session::getUUID() << ": Session Shutdown Fail!";
     }
 
+    BOOST_LOG_TRIVIAL(info) << Session::getUUID() << ": Socket Close";
     Session::getSocket().close();
   }
+
+  bool isConnectd() const { return m_isConnected.load(); }
 
  private:
   void registReadHandler() {
@@ -111,8 +119,9 @@ class ClientSession : public Session {
   std::map<Command, std::function<void(const ErrorCode&, size_t)>> readHandler;
   std::map<Command, std::function<void(const ErrorCode&, size_t)>> writeHandler;
 
-  Message m_msg;
   char m_readBuff[MAX_LEN];
+
+  std::atomic<bool> m_isConnected;
 };
 
 /**
@@ -120,14 +129,15 @@ class ClientSession : public Session {
  */
 template<class T>
 void ClientSession<T>::connectHandler(const ErrorCode& error) {
-  std::cout << "---connectHandle---\n";
+  BOOST_LOG_TRIVIAL(info) << "connectHandler";
 
   if (!error) {
-    std::cout << "Connect Success! " << std::endl;
+    BOOST_LOG_TRIVIAL(info) << "Connect Success!";
 
     read(Command::ACCEPT);
+    m_system.onConnect();
   } else {
-    std::cout << "Connect Fail! : " << error.message() << std::endl;
+    BOOST_LOG_TRIVIAL(error) << "Connect Fail! : " << error.message();
   }
 }
 
@@ -136,37 +146,41 @@ void ClientSession<T>::connectHandler(const ErrorCode& error) {
  */
 template<class T>
 void ClientSession<T>::acceptReadHandler(const ErrorCode& error, size_t len) {
-  std::cout << "---acceptHandler---\n";
+  BOOST_LOG_TRIVIAL(info) << "acceptReadHandler";
 
   if (!error) {
-    std::cout << "Read Success! : " << m_readBuff << " / " << len << std::endl;
-    read(Command::ACCEPT);
+    BOOST_LOG_TRIVIAL(info) << "Read - " << len;
+
+    m_isConnected.store(true);
+    m_system.onRead(std::string(m_readBuff));
   } else {
-    std::cout << "Read Fail! : " << error.message() << std::endl;
+    BOOST_LOG_TRIVIAL(error) << "Read Fail! - " << error.message();
   }
 }
 
 template<class T>
 void ClientSession<T>::requestReadHandler(const ErrorCode& error, size_t len) {
-  std::cout << "---requestHandler---\n";
+  BOOST_LOG_TRIVIAL(info) << Session::getUUID() <<  "requestReadHandler";
 
   if (!error) {
-    std::cout << "Read Success! : " << m_readBuff << " / " << len << std::endl;
-    m_system.updateRead();
+    BOOST_LOG_TRIVIAL(info) << "Read - " << len;
+
+    m_system.onRead(std::string(m_readBuff));
   } else {
-    std::cout << "Read Fail! : " << error.message() << std::endl;
+    BOOST_LOG_TRIVIAL(error) << Session::getUUID() << ": Read Fail! - " << error.message();
   }
 }
 
 template<class T>
 void ClientSession<T>::responseReadHandler(const ErrorCode& error, size_t len) {
-  std::cout << "---requestHandler---\n";
+  BOOST_LOG_TRIVIAL(info) << Session::getUUID() <<  "responseReadHandler";
 
   if (!error) {
-    std::cout << "Read Success! : " << m_readBuff << " / " << len << std::endl;
-    m_system.updateRead();
+    BOOST_LOG_TRIVIAL(info) << "Read - " << len;
+
+    m_system.onRead(std::string(m_readBuff));
   } else {
-    std::cout << "Read Fail! : " << error.message() << std::endl;
+    BOOST_LOG_TRIVIAL(error) << Session::getUUID() << ": Read Fail! - " << error.message();
   }
 }
 
@@ -175,37 +189,40 @@ void ClientSession<T>::responseReadHandler(const ErrorCode& error, size_t len) {
  */
 template<class T>
 void ClientSession<T>::acceptWriteHandler(const ErrorCode& error, size_t len) {
-  std::cout << "---acceptWriteHandler---\n";
+  BOOST_LOG_TRIVIAL(info) << Session::getUUID() <<  "acceptWriteHandler";
 
   if (!error) {
-    std::cout << "Write Success!" << std::endl;
-    m_system.updateWrite();
+    BOOST_LOG_TRIVIAL(info) << Session::getUUID() << ": Write Success - " << len;
+
+    m_system.onWrite();
   } else {
-    std::cout << "Write Fail! : " << error.message() << std::endl;
+    BOOST_LOG_TRIVIAL(error) << Session::getUUID() << ": Write Fail! - " << error.message();
   }
 }
 
 template<class T>
 void ClientSession<T>::requestWriteHandler(const ErrorCode& error, size_t len) {
-  std::cout << "---acceptWriteHandler---\n";
+  BOOST_LOG_TRIVIAL(info) << Session::getUUID() <<  "requestWriteHandler";
 
   if (!error) {
-    std::cout << "Write Success!" << std::endl;
-    m_system.updateWrite();
+    BOOST_LOG_TRIVIAL(info) << Session::getUUID() << ": Write Success - " << len;
+
+    m_system.onWrite();
   } else {
-    std::cout << "Write Fail! : " << error.message() << std::endl;
+    BOOST_LOG_TRIVIAL(error) << Session::getUUID() << ": Write Fail! - " << error.message();
   }
 }
 
 template<class T>
 void ClientSession<T>::reponseWriteHandler(const ErrorCode& error, size_t len) {
-  std::cout << "---acceptWriteHandler---\n";
+  BOOST_LOG_TRIVIAL(info) << "reponseWriteHandler";
 
   if (!error) {
-    std::cout << "Write Success!" << std::endl;
-    m_system.updateWrite();
+    BOOST_LOG_TRIVIAL(info) << Session::getUUID() << ": Write Success - " << len;
+
+    m_system.onWrite();
   } else {
-    std::cout << "Write Fail! : " << error.message() << std::endl;
+    BOOST_LOG_TRIVIAL(error) << Session::getUUID() << ": Write Fail! - " << error.message();
   }
 }
 

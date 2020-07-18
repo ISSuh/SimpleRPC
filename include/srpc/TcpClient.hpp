@@ -13,6 +13,7 @@
 #include <thread>
 
 #include <boost/asio.hpp>
+#include <boost/log/trivial.hpp>
 
 #include "Common.hpp"
 #include "Client.hpp"
@@ -42,19 +43,21 @@ class TcpClient : public Client {
   }
 
   void request(const std::string& msg) {
-    m_session.write(Command::REQUEST, msg);
+    if (m_session.isConnectd()) {
+      m_session.write(Command::REQUEST, msg);
+    }
   }
 
-  void updateConnect() {
-    std::cout << "---updateConnect---\n";
+  void onConnect() override {
+    BOOST_LOG_TRIVIAL(info) << "onConnect";
   }
 
-  void updateRead() override {
-    std::cout << "---updateRead---\n";
+  void onRead(const std::string& serializedMessage) override {
+    BOOST_LOG_TRIVIAL(info) << "onRead";
   }
 
-  void updateWrite() override {
-    std::cout << "---updateWrite---\n";
+  void onWrite() override {
+    BOOST_LOG_TRIVIAL(info) << "onWrite";
   }
 
  private:
@@ -66,9 +69,10 @@ class TcpClient : public Client {
  private:
   IoService m_ioContext;
   std::thread m_ioContextRunner;
-  ClientSession<TcpClient> m_session;
-
+  
   TcpResolver m_resolver;
+  ClientSession<TcpClient> m_session;
+  Message m_msg;
 };
 
 }   // namespace srpc

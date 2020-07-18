@@ -8,6 +8,7 @@
 #define SRPC_COMMON_HPP_
 
 #include <string>
+#include <map>
 
 #include <boost/asio.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -57,6 +58,20 @@ enum class Command : uint8_t {
   ACK,
   PING
 };
+
+const std::map<Command, std::string> CommandToStringMap {
+  {Command::CONNECT, "CONNECT"},
+  {Command::ACCEPT, "ACCEPT"},
+  {Command::CLOSE, "CLOSE"},
+  {Command::REQUEST, "REQUEST"},
+  {Command::REPONSE, "REPONSE"},
+  {Command::ACK, "ACK"},
+  {Command::PING, "PING"}
+};
+
+std::string CommandToString(Command cmd) {
+  return CommandToStringMap.at(cmd);
+}
 
 }  // namespace srpc
 

@@ -12,7 +12,7 @@ ADD_COMPILE_OPTIONS ( -g -Wall)
 #-------------------------------------------------------------------------------
 # Set Third party Library
 #-------------------------------------------------------------------------------
-find_package(Boost REQUIRED COMPONENTS system)
+find_package(Boost REQUIRED COMPONENTS system log)
 
 #-------------------------------------------------------------------------------
 # Set Configure

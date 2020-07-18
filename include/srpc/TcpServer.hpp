@@ -22,6 +22,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <boost/log/trivial.hpp>
 
 #include "Server.hpp"
 #include "ServerSession.hpp"
@@ -47,7 +48,7 @@ class TcpServer : public Server {
 
     // while (true) {
     //   for (const auto& iter : m_sessionMap) {
-    //     iter.second->read();
+    //     iter.second->read(Command::REQUEST);
     //   }
 
     //   usleep(100000);
@@ -58,12 +59,12 @@ class TcpServer : public Server {
     }
   }
 
-  void updateRead(const Uuid& uuid) override {
-    std::cout << "---updateRead--- " << to_string(uuid) << std::endl;
+  void onRead(const Uuid& uuid, const std::string& serializedMessage) override {
+    BOOST_LOG_TRIVIAL(info) << "onRead - " <<  to_string(uuid);
   }
 
-  void updateWrite(const Uuid& uuid) override {
-    std::cout << "---updateWrite--- " << to_string(uuid) << std::endl;
+  void onWrite(const Uuid& uuid) override {
+    BOOST_LOG_TRIVIAL(info) << "onWrite - " <<  to_string(uuid);
   }
 
   void unRegistMap(const Uuid& uuid) {
@@ -100,9 +101,10 @@ class TcpServer : public Server {
 
  private:
   IoService m_ioContext;
-  TcpAcceptor* m_acceptor = nullptr;
 
+  TcpAcceptor* m_acceptor = nullptr;
   std::map<Uuid, std::unique_ptr<ServerSession<TcpServer>>> m_sessionMap;
+  Message m_msg;
 
   std::atomic_bool m_running;
 };

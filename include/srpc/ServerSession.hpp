@@ -13,13 +13,14 @@
 #include <utility>
 #include <functional>
 #include <memory>
+#include <atomic>
 
 #include <boost/asio.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <boost/log/trivial.hpp>
 
 #include "Common.hpp"
-#include "Message.hpp"
 #include "Session.hpp"
 
 namespace srpc {
@@ -29,7 +30,8 @@ class ServerSession : public Session {
  public:
   explicit ServerSession(IoService& ioContext, T& system)
       : Session(ioContext),
-        m_system(system) {
+        m_system(system),
+        m_isConnected(false) {
       registReadHandler();
       registWriteHandler();
   }
@@ -37,33 +39,36 @@ class ServerSession : public Session {
   ~ServerSession() = default;
 
   void read(Command cmd) override {
-    std::cout << "[" << to_string(getUUID()) << "] ---read---\n";
+    BOOST_LOG_TRIVIAL(info) << Session::getUUID() << ": Read - " << CommandToString(cmd);
 
     Session::getSocket().async_read_some(asio::buffer(m_readBuff, MAX_LEN),
                                          readHandler[cmd]);
   }
 
   void write(Command cmd, const std::string& serialized) override {
-    std::cout << "---write---\n";
+    BOOST_LOG_TRIVIAL(info) << Session::getUUID() << ": Write - " << CommandToString(cmd);
 
     Session::getSocket().async_write_some(asio::buffer(serialized, serialized.length()),
                                           writeHandler[cmd]);
   }
 
   void close() override {
-    std::cout << "---close---\n";
+    BOOST_LOG_TRIVIAL(info) << Session::getUUID() << ": Close";
 
     ErrorCode error;
     Session::getSocket().shutdown(TcpSocket::shutdown_both, error);
 
     if (!error) {
-      std::cout << "Socket Shutdown Success! " << std::endl;
+      BOOST_LOG_TRIVIAL(info) << Session::getUUID() << ": Session Shutdown Success!";
     } else {
-      std::cout << "Socket Shutdown Fail! " << std::endl;
+      BOOST_LOG_TRIVIAL(error) << Session::getUUID() << ": Session Shutdown Fail!";
     }
 
+    BOOST_LOG_TRIVIAL(info) << Session::getUUID() << ": Socket Close";
     Session::getSocket().close();
   }
+
+  bool isConnectd() const { return m_isConnected.load(); }
 
  private:
   void registReadHandler() {
@@ -100,8 +105,9 @@ class ServerSession : public Session {
   std::map<Command, std::function<void(const ErrorCode&, size_t)>> readHandler;
   std::map<Command, std::function<void(const ErrorCode&, size_t)>> writeHandler;
 
-  Message m_msg;
   char m_readBuff[MAX_LEN];
+
+  std::atomic<bool> m_isConnected;
 };
 
 /**
@@ -109,29 +115,33 @@ class ServerSession : public Session {
  */
 template<class T>
 void ServerSession<T>::requestReadHandler(const ErrorCode& error, size_t len) {
-  std::cout << "---requesHandler---\n";
+  BOOST_LOG_TRIVIAL(info) << Session::getUUID() <<  "requestReadHandler";
 
   if (!error) {
-    std::cout << "Read Success! : " << m_readBuff << " / " << len << " - " << Session::getUUID() << std::endl;
-    m_system.updateRead(Session::getUUID());
+    BOOST_LOG_TRIVIAL(info) << "Read - " << len;
+
+    m_system.onRead(Session::getUUID(), std::string(m_readBuff));
     read(Command::REQUEST);
   } else {
+    BOOST_LOG_TRIVIAL(error) << Session::getUUID() << ": Read Fail! - " << error.message();
+
     m_system.unRegistMap(Session::getUUID());
-    std::cout << "Read Fail! : " << error.message() << std::endl;
   }
 }
 
 template<class T>
 void ServerSession<T>::responseReadHandler(const ErrorCode& error, size_t len) {
-  std::cout << "---requesHandler---\n";
+  BOOST_LOG_TRIVIAL(info) << Session::getUUID() <<  "responseReadHandler";
 
   if (!error) {
-    std::cout << "Read Success! : " << m_readBuff << " / " << len << " - " << Session::getUUID() << std::endl;
-    m_system.updateRead(Session::getUUID());
+    BOOST_LOG_TRIVIAL(info) << "Read - " << len;
+
+    m_system.onRead(Session::getUUID(), std::string(m_readBuff));
     read(Command::REQUEST);
   } else {
+    BOOST_LOG_TRIVIAL(error) << Session::getUUID() << ": Read Fail! - " << error.message();
+
     m_system.unRegistMap(Session::getUUID());
-    std::cout << "Read Fail! : " << error.message() << std::endl;
   }
 }
 
@@ -140,40 +150,47 @@ void ServerSession<T>::responseReadHandler(const ErrorCode& error, size_t len) {
  */
 template<class T>
 void ServerSession<T>::acceptWriteHandler(const ErrorCode& error, size_t len) {
-  std::cout << "---acceptHandler---\n";
+  BOOST_LOG_TRIVIAL(info) << Session::getUUID() <<  "acceptWriteHandler";
 
   if (!error) {
-    std::cout << "Write Success!" << std::endl;
-    m_system.updateWrite(Session::getUUID());
+    BOOST_LOG_TRIVIAL(info) << Session::getUUID() << ": Write Success - " << len;
+
+    m_isConnected.store(true);
+    m_system.onWrite(Session::getUUID());
   } else {
+    BOOST_LOG_TRIVIAL(error) << Session::getUUID() << ": Write Fail! - " << error.message();
+
     m_system.unRegistMap(Session::getUUID());
-    std::cout << "Write Fail! : " << error.message() << std::endl;
   }
 }
 
 template<class T>
 void ServerSession<T>::requestWriteHandler(const ErrorCode& error, size_t len) {
-  std::cout << "---reponseHandler---\n";
+  BOOST_LOG_TRIVIAL(info) << Session::getUUID() <<  "requestWriteHandler";
 
   if (!error) {
-    std::cout << "Write Success!" << std::endl;
-    m_system.updateWrite(Session::getUUID());
+    BOOST_LOG_TRIVIAL(info) << Session::getUUID() << ": Write Success - " << len;
+
+    m_system.onWrite(Session::getUUID());
   } else {
+    BOOST_LOG_TRIVIAL(error) << Session::getUUID() << ": Write Fail! - " << error.message();
+
     m_system.unRegistMap(Session::getUUID());
-    std::cout << "Write Fail! : " << error.message() << std::endl;
   }
 }
 
 template<class T>
 void ServerSession<T>::reponseWriteHandler(const ErrorCode& error, size_t len) {
-  std::cout << "---reponseHandler---\n";
+  BOOST_LOG_TRIVIAL(info) << "reponseWriteHandler";
 
   if (!error) {
-    std::cout << "Write Success!" << std::endl;
-    m_system.updateWrite(Session::getUUID());
+    BOOST_LOG_TRIVIAL(info) << Session::getUUID() << ": Write Success - " << len;
+
+    m_system.onWrite(Session::getUUID());
   } else {
+    BOOST_LOG_TRIVIAL(error) << Session::getUUID() << ": Write Fail! - " << error.message();
+
     m_system.unRegistMap(Session::getUUID());
-    std::cout << "Write Fail! : " << error.message() << std::endl;
   }
 }
 

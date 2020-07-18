@@ -21,9 +21,9 @@ class Client {
 
   virtual void request(const std::string& msg) = 0;
 
-  virtual void updateConnect() = 0;
-  virtual void updateRead() = 0;
-  virtual void updateWrite() = 0;
+  virtual void onConnect() = 0;
+  virtual void onRead(const std::string& serializedMessage) = 0;
+  virtual void onWrite() = 0;
 };
 
 }  // namespace srpc

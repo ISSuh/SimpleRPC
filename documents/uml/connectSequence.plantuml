@@ -13,7 +13,7 @@ autonumber
 
 server <- client : CONNECT\nOnly Send Header
 activate server
-  ref over server : Create Session\nand Client UUID
+  ref over server : Create d\nand Client UUID
   
   server --> client : ACCEPT\nOnly Send Header
 deactivate
