@@ -25,8 +25,8 @@ class Session {
   virtual ~Session() = default;
 
   virtual void connect(const TcpResolverIterator& endpointIter) { UNUSED(endpointIter); }
-  virtual void read() {}
-  virtual void write(const std::string& test) { UNUSED(test); }
+  virtual void read(Command cmd) = 0;
+  virtual void write(Command cmd, const std::string& test) = 0;
   virtual void close() = 0;
 
   virtual TcpSocket& getSocket() { return m_socket; }
@@ -36,10 +36,6 @@ class Session {
 
  protected:
   explicit Session(IoService& ioContext) : m_socket(ioContext) {}
-
-  virtual void connectHandler(const ErrorCode& error) { UNUSED(error); }
-  virtual void readHandler(const ErrorCode& error, size_t len) = 0;
-  virtual void writeHandler(const ErrorCode& error) = 0;
 
  private:
   TcpSocket m_socket;

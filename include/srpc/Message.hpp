@@ -13,26 +13,16 @@
 
 namespace srpc {
 
-enum class NET_COMMAND : uint8_t {
-  REQUEST,
-  REPONSE,
-  ACCEPT,
-  CONNECT,
-  CLOSE,
-  ACK,
-  PING
-};
-
 #pragma pack(push, 1)
 struct HeaderPacket {
   uint8_t command;
   uint8_t reserve;
   uint8_t headerSize;
-  uint8_t offset;
+  uint8_t offset_1;
   uint8_t serviceNameLen;
   uint8_t rpcNameLen;
   uint8_t serializedJsonLen;
-  uint8_t offset;
+  uint8_t offset_2;
   uint32_t bodySize;
   uint32_t bodyIndex;
   uint32_t bodyLen;
@@ -53,7 +43,7 @@ class Message {
   Message() = default;
   ~Message() = default;
 
-  void makeMessage(NET_COMMAND cmd) {}
+  void makeMessage(Command cmd) {}
 
   size_t getHeaderSize() const { return sizeof(m_header); }
   size_t getBodySize() const { return sizeof(m_body); }

@@ -23,7 +23,6 @@ class session {
   void start() {
     cout << "connected" << endl;
 
-    char data_[1024];
     socket_.async_read_some(boost::asio::buffer(data_, 1024),
         std::bind(&session::handle_read, this, std::placeholders::_1, std::placeholders::_2));
   }
@@ -31,7 +30,7 @@ class session {
  private:
   void handle_read(const boost::system::error_code& error, size_t bytes_transferred) {
     if (!error) {
-      cout << data_ << endl;
+      cout << "test : " << data_ << endl;
     } else {
       delete this;
     }

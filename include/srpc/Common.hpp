@@ -7,6 +7,8 @@
 #ifndef SRPC_COMMON_HPP_
 #define SRPC_COMMON_HPP_
 
+#include <string>
+
 #include <boost/asio.hpp>
 #include <boost/uuid/uuid.hpp>
 
@@ -27,6 +29,8 @@ using TcpResolverIterator = boost::asio::ip::tcp::resolver::iterator;
 
 using Uuid = boost::uuids::uuid;
 
+const size_t MAX_LEN = 1024;
+
 template<typename T>
 void UNUSED(T&&) {}
 
@@ -42,6 +46,16 @@ enum class ProtocolType : uint8_t {
 enum class FunctionType : uint8_t {
   SYNC,
   ASYNC
+};
+
+enum class Command : uint8_t {
+  CONNECT,
+  ACCEPT,
+  CLOSE,
+  REQUEST,
+  REPONSE,
+  ACK,
+  PING
 };
 
 }  // namespace srpc

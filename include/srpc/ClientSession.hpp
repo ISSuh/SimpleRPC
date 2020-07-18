@@ -9,6 +9,7 @@
 
 #include <iostream>
 #include <string>
+#include <map>
 #include <utility>
 #include <functional>
 #include <memory>
@@ -40,22 +41,18 @@ class ClientSession : public Session {
                                          std::placeholders::_1));
   }
 
-  void read() {
+  void read(Command cmd) override {
     std::cout << "---read---\n";
 
-    Session::getSocket().async_read_some(asio::buffer(msg, 1024),
-                             std::bind(&ClientSession::readHandler,
-                                        this,
-                                        std::placeholders::_1, std::placeholders::_2));
+    Session::getSocket().async_read_some(asio::buffer(m_readBuff, MAX_LEN),
+                                         readHandler[cmd]);
   }
 
-  void write(const std::string& test) {
-    std::cout << "---write--- " << test << std::endl;
+  void write(Command serialized, const std::string& serialized) override {
+    std::cout << "---write--- " << serialized << std::endl;
 
-    asio::async_write(Session::getSocket(), asio::buffer(test, test.length()),
-                             std::bind(&ClientSession::writeHandler,
-                                        this,
-                                        std::placeholders::_1));
+    Session::getSocket().async_write_some(asio::buffer(serialized, serialized.length()),
+                                          writeHandler[cmd]);
   }
 
   void close() override {
@@ -74,45 +71,143 @@ class ClientSession : public Session {
   }
 
  private:
-  void connectHandler(const ErrorCode& error) {
-    std::cout << "---connectHandle---\n";
-
-    if (!error) {
-      std::cout << "Connect Success! " << std::endl;
-
-      read();
-    } else {
-      std::cout << "Connect Fail! : " << error.message() << std::endl;
-    }
+  void registReadHandler() {
+    readHandler = {
+      {Command::ACCEPT, std::bind(&ClientSession::acceptReadHandler, this,
+                                   std::placeholders::_1, std::placeholders::_2)},
+      {Command::REQUEST, std::bind(&ClientSession::requestReadHandler, this,
+                                   std::placeholders::_1, std::placeholders::_2)},
+      {Command::REPONSE, std::bind(&ClientSession::responseReadHandler, this,
+                                   std::placeholders::_1, std::placeholders::_2)}
+    };
   }
 
-  void readHandler(const ErrorCode& error, size_t len) override {
-    std::cout << "---readHandler---\n";
-
-    if (!error) {
-      std::cout << "Read Success! : " << msg << " / " << len << std::endl;
-      m_system.updateRead();
-    } else {
-      std::cout << "Read Fail! : " << error.message() << std::endl;
-    }
+  void registWriteHandler() {
+    writeHandler = {
+      {Command::ACCEPT, std::bind(&ClientSession::acceptWriteHandler, this,
+                                   std::placeholders::_1, std::placeholders::_2)},
+      {Command::REQUEST, std::bind(&ClientSession::requestWriteHandler, this,
+                                   std::placeholders::_1, std::placeholders::_2)},
+      {Command::REPONSE, std::bind(&ClientSession::reponseWriteHandler, this,
+                                   std::placeholders::_1, std::placeholders::_2)}
+    };
   }
 
-  void writeHandler(const ErrorCode& error) override {
-    std::cout << "---writeHandler---\n";
+  // Connect Handler
+  void connectHandler(const ErrorCode& error);
 
-    if (!error) {
-      std::cout << "Write Success!" << std::endl;
-      m_system.updateWrite();
-    } else {
-      std::cout << "Write Fail! : " << error.message() << std::endl;
-    }
-  }
+  // Read Handler
+  void acceptReadHandler(const ErrorCode& error, size_t len);
+  void requestReadHandler(const ErrorCode& error, size_t len);
+  void responseReadHandler(const ErrorCode& error, size_t len);
+
+  // Write Handler
+  void acceptWriteHandler(const ErrorCode& error, size_t len);
+  void requestWriteHandler(const ErrorCode& error, size_t len);
+  void reponseWriteHandler(const ErrorCode& error, size_t len);
 
  private:
   T& m_system;
+  std::map<Command, std::function<void(const ErrorCode&, size_t)>> readHandler;
+  std::map<Command, std::function<void(const ErrorCode&, size_t)>> writeHandler;
+
   Message m_msg;
-  char msg[1024];
+  char m_readBuff[MAX_LEN];
 };
+
+/**
+ * Connect Handler
+ */
+template<class T>
+void ClientSession<T>::connectHandler(const ErrorCode& error) {
+  std::cout << "---connectHandle---\n";
+
+  if (!error) {
+    std::cout << "Connect Success! " << std::endl;
+
+    read(Command::ACCEPT);
+  } else {
+    std::cout << "Connect Fail! : " << error.message() << std::endl;
+  }
+}
+
+/**
+ * Read Handler
+ */
+template<class T>
+void ClientSession<T>::acceptReadHandler(const ErrorCode& error, size_t len) {
+  std::cout << "---acceptHandler---\n";
+
+  if (!error) {
+    std::cout << "Read Success! : " << m_readBuff << " / " << len << std::endl;
+    read(Command::ACCEPT);
+  } else {
+    std::cout << "Read Fail! : " << error.message() << std::endl;
+  }
+}
+
+template<class T>
+void ClientSession<T>::requestReadHandler(const ErrorCode& error, size_t len) {
+  std::cout << "---requestHandler---\n";
+
+  if (!error) {
+    std::cout << "Read Success! : " << m_readBuff << " / " << len << std::endl;
+    m_system.updateRead();
+  } else {
+    std::cout << "Read Fail! : " << error.message() << std::endl;
+  }
+}
+
+template<class T>
+void ClientSession<T>::responseReadHandler(const ErrorCode& error, size_t len) {
+  std::cout << "---requestHandler---\n";
+
+  if (!error) {
+    std::cout << "Read Success! : " << m_readBuff << " / " << len << std::endl;
+    m_system.updateRead();
+  } else {
+    std::cout << "Read Fail! : " << error.message() << std::endl;
+  }
+}
+
+/**
+ * Read Handler
+ */
+template<class T>
+void ClientSession<T>::acceptWriteHandler(const ErrorCode& error, size_t len) {
+  std::cout << "---acceptWriteHandler---\n";
+
+  if (!error) {
+    std::cout << "Write Success!" << std::endl;
+    m_system.updateWrite();
+  } else {
+    std::cout << "Write Fail! : " << error.message() << std::endl;
+  }
+}
+
+template<class T>
+void ClientSession<T>::requestWriteHandler(const ErrorCode& error, size_t len) {
+  std::cout << "---acceptWriteHandler---\n";
+
+  if (!error) {
+    std::cout << "Write Success!" << std::endl;
+    m_system.updateWrite();
+  } else {
+    std::cout << "Write Fail! : " << error.message() << std::endl;
+  }
+}
+
+template<class T>
+void ClientSession<T>::reponseWriteHandler(const ErrorCode& error, size_t len) {
+  std::cout << "---acceptWriteHandler---\n";
+
+  if (!error) {
+    std::cout << "Write Success!" << std::endl;
+    m_system.updateWrite();
+  } else {
+    std::cout << "Write Fail! : " << error.message() << std::endl;
+  }
+}
 
 }  // namespace srpc
 

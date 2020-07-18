@@ -42,7 +42,7 @@ class TcpClient : public Client {
   }
 
   void request(const std::string& msg) {
-    m_session.write(msg);
+    m_session.write(Command::REQUEST, msg);
   }
 
   void updateConnect() {

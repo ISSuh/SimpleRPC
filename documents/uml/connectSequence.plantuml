@@ -1,0 +1,46 @@
+@startuml SimpleRPC_Sequence_Connect
+
+box Server
+participant server
+end box
+
+box Client
+participant client
+end box
+
+== CONNECT Sequnce==
+autonumber
+
+server <- client : CONNECT\nOnly Send Header
+activate server
+  ref over server : Create Session\nand Client UUID
+  
+  server --> client : ACCEPT\nOnly Send Header
+deactivate
+
+activate client
+  ref over client : Set UUID
+
+  client --> client
+deactivate
+
+== REQUEST Sequence \n- Call RPC function on client ==
+autonumber
+
+server <- client : REQUEST\n
+activate server
+  ref over server : ??
+  
+  server --> client : RESPONSE
+deactivate
+
+activate client
+  ref over client : ??
+
+  client --> client
+deactivate
+
+== CLOSE Sequence ==
+
+
+@enduml

@@ -40,18 +40,18 @@ class TcpServer : public Server {
   void run() override {
     accpet();
 
-    std::thread t([&](){ 
+    std::thread t([&](){
       IoService::work worker(m_ioContext);
       m_ioContext.run();
     });
 
-    while (true) {
-      for (const auto& iter : m_sessionMap) {
-        iter.second->read();
-      }
+    // while (true) {
+    //   for (const auto& iter : m_sessionMap) {
+    //     iter.second->read();
+    //   }
 
-      usleep(100000);
-    }
+    //   usleep(100000);
+    // }
 
     if (t.joinable()) {
       t.join();
@@ -90,7 +90,7 @@ class TcpServer : public Server {
       std::cout << m_sessionMap[newUUID].get() << '\n';
 
       m_sessionMap[newUUID]->setUUID(newUUID);
-      m_sessionMap[newUUID]->write(to_string(newUUID));
+      m_sessionMap[newUUID]->write(Command::ACCEPT, to_string(newUUID));
     } else {
       std::cout << "Accept Error!\n";
     }
