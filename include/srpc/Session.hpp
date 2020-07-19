@@ -27,20 +27,20 @@ class Session {
 
   virtual void connect(const TcpResolverIterator& endpointIter) { UNUSED(endpointIter); }
   virtual void read(Command cmd) = 0;
-  virtual void write(Command cmd, Message msg) = 0;
+  virtual void write(Command cmd, Message& msg) = 0;
   virtual void close() = 0;
 
   virtual TcpSocket& getSocket() { return m_socket; }
 
-  virtual void setUUID(const Uuid& uuid ) { m_uuid = uuid; }
-  virtual const Uuid& getUUID() const { return m_uuid; }
+  virtual void setUUID(const std::string& uuid ) { m_uuid = uuid; }
+  virtual const std::string& getUUID() const { return m_uuid; }
 
  protected:
   explicit Session(IoService& ioContext) : m_socket(ioContext) {}
 
  private:
   TcpSocket m_socket;
-  Uuid m_uuid;
+  std::string m_uuid;
 };
 
 }  // namespace srpc

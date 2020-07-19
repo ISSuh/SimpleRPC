@@ -61,6 +61,7 @@ enum class Command : uint8_t {
 };
 
 const std::map<Command, std::string> CommandToStringMap {
+  {Command::NONE, "NONE"},
   {Command::CONNECT, "CONNECT"},
   {Command::ACCEPT, "ACCEPT"},
   {Command::CLOSE, "CLOSE"},

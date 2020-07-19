@@ -35,8 +35,10 @@ class ClientHandle {
     m_client->close();
   }
 
-  void request(const std::string& msg) {
-    m_client->request(msg);
+  void request(const std::string& serviceName,
+               const std::string& rpcName,
+               const std::string& params) {
+    m_client->request(serviceName, rpcName, params);
   }
 
  private:

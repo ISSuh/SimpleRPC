@@ -19,7 +19,9 @@ class Client {
   virtual void connect(const std::string& host, const std::string& port) = 0;
   virtual void close() = 0;
 
-  virtual void request(const std::string& msg) = 0;
+  virtual void request(const std::string& serviceName,
+                       const std::string& rpcName,
+                       const std::string& params) = 0;
 
   virtual void onConnect() = 0;
   virtual void onRead(const std::string& serializedMessage) = 0;

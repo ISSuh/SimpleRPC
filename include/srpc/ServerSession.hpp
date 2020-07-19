@@ -48,7 +48,8 @@ class ServerSession : public Session {
 
   void write(Command cmd, Message& msg) override {
     BOOST_LOG_TRIVIAL(info) << Session::getUUID() << ": Write - " << CommandToString(cmd);
-    msg.setUuid(to_string(Session::getUUID()));
+
+    msg.printPacketforDubugging();
 
     Session::getSocket().async_write_some(asio::buffer(msg.serialize(), msg.getSize()),
                                           writeHandler[cmd]);
@@ -152,7 +153,7 @@ void ServerSession<T>::responseReadHandler(const ErrorCode& error, size_t len) {
  */
 template<class T>
 void ServerSession<T>::acceptWriteHandler(const ErrorCode& error, size_t len) {
-  BOOST_LOG_TRIVIAL(info) << Session::getUUID() <<  "acceptWriteHandler";
+  BOOST_LOG_TRIVIAL(info) << Session::getUUID() <<  ": acceptWriteHandler";
 
   if (!error) {
     BOOST_LOG_TRIVIAL(info) << Session::getUUID() << ": Write Success - " << len;

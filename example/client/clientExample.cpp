@@ -16,8 +16,9 @@ int main(int argc, char* argv[]) {
 
   int i = 0;
   while (1) {
-    c.request(std::to_string(i));
+    c.request("serviceTest", "rpcTest", std::to_string(i));
     sleep(1);
+    ++i;
   }
 
 

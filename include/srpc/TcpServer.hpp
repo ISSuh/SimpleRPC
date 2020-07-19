@@ -59,15 +59,15 @@ class TcpServer : public Server {
     }
   }
 
-  void onRead(const Uuid& uuid, const std::string& serializedMessage) override {
-    BOOST_LOG_TRIVIAL(info) << "onRead - " <<  to_string(uuid);
+  void onRead(const std::string& uuid, const std::string& serializedMessage) override {
+    BOOST_LOG_TRIVIAL(info) << "onRead - " <<  uuid;
   }
 
-  void onWrite(const Uuid& uuid) override {
-    BOOST_LOG_TRIVIAL(info) << "onWrite - " <<  to_string(uuid);
+  void onWrite(const std::string& uuid) override {
+    BOOST_LOG_TRIVIAL(info) << "onWrite - " <<  uuid;
   }
 
-  void unRegistMap(const Uuid& uuid) {
+  void unRegistMap(const std::string& uuid) {
     m_sessionMap[uuid].release();
     m_sessionMap.erase(uuid);
   }
@@ -85,13 +85,17 @@ class TcpServer : public Server {
   void acceptHandle(const ErrorCode& error, ServerSession<TcpServer>* session) {
     if (!error) {
       Uuid newUUID = boost::uuids::random_generator()();
-      m_sessionMap.insert(std::make_pair(newUUID, session));
+      std::string strUUID = to_string(newUUID);
 
-      BOOST_LOG_TRIVIAL(info) << "Accept New Client - " << newUUID << " / " << m_sessionMap.size();
+      m_sessionMap.insert(std::make_pair(strUUID, session));
+      session->setUUID(strUUID);
 
-      Message msg(Command::ACCEPT);
-      m_sessionMap[newUUID]->setUUID(newUUID);
-      m_sessionMap[newUUID]->write(Command::ACCEPT, msg));
+      BOOST_LOG_TRIVIAL(info) << "Accept New Client - " << strUUID << " / " << m_sessionMap.size();
+
+      Message msg(strUUID);
+      msg.setCommand(Command::ACCEPT);
+
+      session->write(Command::ACCEPT, msg);
     } else {
       BOOST_LOG_TRIVIAL(error) << "Accept Error! - " << error.message();
       delete session;
@@ -104,7 +108,7 @@ class TcpServer : public Server {
   IoService m_ioContext;
 
   TcpAcceptor* m_acceptor = nullptr;
-  std::map<Uuid, std::unique_ptr<ServerSession<TcpServer>>> m_sessionMap;
+  std::map<std::string, std::unique_ptr<ServerSession<TcpServer>>> m_sessionMap;
 };
 
 }   // namespace srpc

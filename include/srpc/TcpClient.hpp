@@ -42,8 +42,14 @@ class TcpClient : public Client {
     m_session.close();
   }
 
-  void request(const std::string& msg) {
+  void request(const std::string& serviceName,
+               const std::string& rpcName,
+               const std::string& paramTest) {
     if (m_session.isConnectd()) {
+      Message msg(m_session.getUUID());
+      msg.setCommand(Command::REQUEST);
+      msg.setBody(serviceName, rpcName, paramTest);
+
       m_session.write(Command::REQUEST, msg);
     }
   }
