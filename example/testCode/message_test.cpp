@@ -20,7 +20,7 @@ int main(int argc, char* argv[]) {
   serializeMessage.printPacketforDubugging();
   std::cout << std::endl;
 
-  std::string serializedMessage(serializeMessage.serialize());
+  std::vector<char> serializedMessage(serializeMessage.serialize());
   std::cout << serializedMessage.size() << std::endl;
 
   srpc::Message deserializedMsg(serializedMessage);
@@ -42,7 +42,7 @@ int main(int argc, char* argv[]) {
   serializeMessage_1.printPacketforDubugging();
   std::cout << std::endl;
 
-  std::string serializedMessage_1(serializeMessage_1.serialize());
+  std::vector<char> serializedMessage_1(serializeMessage_1.serialize());
   std::cout << serializedMessage_1.size() << std::endl;
 
   srpc::Message deserializedMsg_1(serializedMessage_1);

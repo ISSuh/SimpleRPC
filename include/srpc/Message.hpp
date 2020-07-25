@@ -58,7 +58,7 @@ struct BodyPacket {
 class Message {
  public:
   Message() {}
-  explicit Message(const std::string& serializedMessage) {
+  explicit Message(const std::vector<char>& serializedMessage) {
     deserialize(serializedMessage);
   }
 
@@ -145,22 +145,19 @@ class Message {
       return serializedHeader();
     }
 
-    std::string header(serializedHeader().c_str(), m_header.headerSize);
-    std::string body(serializedBody().c_str(), m_header.bodySize);
-
-    std::string serialized(header + body);
-    return std::move(serialized);
+    std::vector<char> buffer(serializedHeader());
+    std::vector<char> body(serializedBody());
+    buffer.insert(buffer.end(), body.begin(), body.end());
+    
+    return std::move(buffer);
   }
 
-  void deserialize(const std::string& serializedMessage) {
+  void deserialize(const std::vector<char>& serializedMessage) {
     if (serializedMessage.size() <= HEADER_SIZE) {
       deserializeHeader(serializedMessage);
       return;
     }
 
-    std::cout << serializedMessage << std::endl;
-
-    // std::string header();
     // deserializeHeader(serializedMessage.substr(0, HEADER_SIZE));
     // deserializeBody(serializedMessage.substr(HEADER_SIZE + 1));
   }
@@ -188,22 +185,38 @@ class Message {
 
  private:
   const std::vector<char>& serializedHeader() {
-    return std::move(std::string(reinterpret_cast<const char*>(&m_header), HEADER_SIZE));
+    std::vector<char> buffer;
+
+    std::copy(&m_header,
+              &m_header + HEADER_SIZE,
+              std::back_inserter(buffer));
+
+    return std::move(buffer);
   }
 
   const std::vector<char>& serializedBody() {
-    std::string str(m_body.serviceName);
-    str.append(m_body.rpcName);
-    str.append(m_body.serializedJson);
+    std::vector<char> buffer;
 
-    return std::move(str);
+    std::copy(m_body.serviceName.begin(),
+              m_body.serviceName.end(),
+              std::back_inserter(buffer));
+
+    std::copy(m_body.rpcName.begin(),
+              m_body.rpcName.end(),
+              std::back_inserter(buffer));
+
+    std::copy(m_body.serializedJson.begin(),
+              m_body.serializedJson.end(),
+              std::back_inserter(buffer));
+
+    return std::move(buffer);
   }
 
-  void deserializeHeader(const std::string& header) {
-    m_header = *reinterpret_cast<HeaderPacket*>(const_cast<char*>(header.c_str()));
+  void deserializeHeader(const std::vector<char>& header) {
+    std::copy(header.begin(), header.end(), m_header);
   }
 
-  void deserializeBody(const std::string& body) {
+  void deserializeBody(const std::vector<char>& body) {
     uint32_t start = 0;
     uint32_t end = m_header.serviceNameLen;
 
