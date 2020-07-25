@@ -23,7 +23,7 @@ namespace srpc {
 
 class TcpClient : public Client {
  public:
-  TcpClient() : m_session(m_ioContext, *this), m_resolver(m_ioContext) {
+  TcpClient() : m_resolver(m_ioContext), m_session(m_ioContext, *this) {
     m_ioContextRunner = std::thread(&TcpClient::contextRunner, this);
   }
 
@@ -31,20 +31,20 @@ class TcpClient : public Client {
     m_ioContextRunner.join();
   }
 
-  void connect(const std::string& host, const std::string& port) {
+  void connect(const std::string& host, const std::string& port) override {
     TcpResolverQuery clientQuery(host, port);
     TcpResolverIterator endpointIter = m_resolver.resolve(clientQuery);
 
     m_session.connect(endpointIter);
   }
 
-  void close() {
+  void close() override {
     m_session.close();
   }
 
   void request(const std::string& serviceName,
                const std::string& rpcName,
-               const std::string& paramTest) {
+               const std::string& paramTest) override {
     if (m_session.isConnectd()) {
       Message msg;
       msg.setUuid(m_session.getUUID());

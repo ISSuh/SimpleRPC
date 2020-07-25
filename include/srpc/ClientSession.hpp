@@ -38,7 +38,7 @@ class ClientSession : public Session {
 
   ~ClientSession() = default;
 
-  void connect(const TcpResolverIterator& endpointIter) {
+  void connect(const TcpResolverIterator& endpointIter) override {
     BOOST_LOG_TRIVIAL(info) << "connectSession";
 
     asio::async_connect(Session::getSocket(), endpointIter,

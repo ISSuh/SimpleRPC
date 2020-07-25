@@ -35,7 +35,7 @@ class TcpServer : public Server {
   TcpServer() {}
   ~TcpServer() {}
 
-  void configure(const uint32_t port) {
+  void configure(const uint32_t port) override {
     m_acceptor = new TcpAcceptor(m_ioContext, TcpEndPoint(asio::ip::tcp::v4(), port));
   }
 

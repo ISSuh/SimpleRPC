@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <utility>
 
 #include "Common.hpp"
 
@@ -17,18 +18,18 @@ namespace srpc {
 
 const size_t HEADER_SIZE = 65;
 
-#pragma pack(push, 1)
+// #pragma pack(push, 1)
 struct HeaderPacket {
   HeaderPacket() : command(0),
                    reserve(0),
                    headerSize(HEADER_SIZE),
+                   bodyIndex(0),
                    bodySize(0),
                    size(HEADER_SIZE),
                    serviceNameLen(0),
                    rpcNameLen(0),
                    serializedJsonLen(0),
-                   bodyLen(0),
-                   bodyIndex(0),
+                   bodyLen(1),
                    uuid("00000000-0000-0000-0000-000000000000") {}
 
 
@@ -42,28 +43,28 @@ struct HeaderPacket {
   uint32_t rpcNameLen;
   uint32_t serializedJsonLen;
   uint32_t bodyLen;
-  char uuid[37];
+  std::string uuid;
 };
-#pragma pack(pop)
+// #pragma pack(pop)
 
-#pragma pack(push, 1)
+// #pragma pack(push, 1)
 struct BodyPacket {
   std::string serviceName;
   std::string rpcName;
   std::string serializedJson;
 };
-#pragma pack(pop)
+// #pragma pack(pop)
 
 class Message {
  public:
   Message() {}
-  explicit Message(const std::string& serializedMaessage) {
-    deserialize(serializedMaessage);
+  explicit Message(const std::string& serializedMessage) {
+    deserialize(serializedMessage);
   }
 
   ~Message() = default;
 
-  size_t getSize() const { m_header.size; }
+  size_t getSize() const { return m_header.size; }
   size_t getHeaderSize() const { return HEADER_SIZE; }
   size_t getBodySize() const { return m_header.bodySize; }
 
@@ -81,8 +82,9 @@ class Message {
   }
 
   void setUuid(const std::string& uuid) {
-    uuid.copy(m_header.uuid, uuid.size()+1);
+    // uuid.copy(m_header.uuid, uuid.size()+1);
     // std::copy(&uuid, &(uuid) + 36, m_header.uuid);
+    m_header.uuid = uuid;
   }
 
   void setCommand(Command cmd) {
@@ -138,12 +140,16 @@ class Message {
   /**
    * Message serialize and deserialize
    */
-  const std::string& serialize() {
+  const std::vector<char>& serialize() {
     if (m_header.bodySize == 0) {
       return serializedHeader();
     }
 
-    return serializedHeader() + serializedBody();
+    std::string header(serializedHeader().c_str(), m_header.headerSize);
+    std::string body(serializedBody().c_str(), m_header.bodySize);
+
+    std::string serialized(header + body);
+    return std::move(serialized);
   }
 
   void deserialize(const std::string& serializedMessage) {
@@ -152,14 +158,16 @@ class Message {
       return;
     }
 
-    deserializeHeader(serializedMessage.substr(0, HEADER_SIZE));
-    deserializeBody(serializedMessage.substr(HEADER_SIZE + 1));
+    std::cout << serializedMessage << std::endl;
+
+    // std::string header();
+    // deserializeHeader(serializedMessage.substr(0, HEADER_SIZE));
+    // deserializeBody(serializedMessage.substr(HEADER_SIZE + 1));
   }
 
   // Test Code
   void printPacketforDubugging() {
     std::string uuid(m_header.uuid);
-    std::cout << "-----------------------\n";
     std::cout << "======== Header ========\n";
     std::cout << "command : " <<
                   CommandToString(static_cast<Command>(m_header.command)) << std::endl;
@@ -179,22 +187,16 @@ class Message {
   }
 
  private:
-  const std::string& serializedHeader() {
-    char buf[HEADER_SIZE];
-    std::copy(reinterpret_cast<char*>(&m_header),
-              reinterpret_cast<char*>(&m_header) + HEADER_SIZE,
-              buf);
-
-    return std::string(buf);
+  const std::vector<char>& serializedHeader() {
+    return std::move(std::string(reinterpret_cast<const char*>(&m_header), HEADER_SIZE));
   }
 
-  const std::string& serializedBody() {
-    std::string str;
-    str.append(m_body.serviceName);
+  const std::vector<char>& serializedBody() {
+    std::string str(m_body.serviceName);
     str.append(m_body.rpcName);
     str.append(m_body.serializedJson);
 
-    return str;
+    return std::move(str);
   }
 
   void deserializeHeader(const std::string& header) {
@@ -219,7 +221,7 @@ class Message {
     m_header.bodySize = m_header.serviceNameLen +
                         m_header.rpcNameLen +
                         m_header.serializedJsonLen;
-    m_header.size = m_header.size + m_header.bodySize;
+    m_header.size = m_header.headerSize + m_header.bodySize;
   }
 
  private:
