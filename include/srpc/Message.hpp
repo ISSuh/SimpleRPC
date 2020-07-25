@@ -15,7 +15,7 @@
 
 namespace srpc {
 
-const size_t HEADER_SIZE = 57;
+const size_t HEADER_SIZE = 65;
 
 #pragma pack(push, 1)
 struct HeaderPacket {
@@ -27,22 +27,21 @@ struct HeaderPacket {
                    serviceNameLen(0),
                    rpcNameLen(0),
                    serializedJsonLen(0),
-                   offset(0),
                    bodyLen(0),
                    bodyIndex(0),
-                   uuid("\n") {}
+                   uuid("00000000-0000-0000-0000-000000000000") {}
+
 
   uint8_t command;
   uint8_t reserve;
   uint8_t headerSize;
-  uint8_t bodySize;
+  uint8_t bodyIndex;
+  uint32_t bodySize;
   uint32_t size;
-  uint8_t serviceNameLen;
-  uint8_t rpcNameLen;
-  uint8_t serializedJsonLen;
-  uint8_t offset;
+  uint32_t serviceNameLen;
+  uint32_t rpcNameLen;
+  uint32_t serializedJsonLen;
   uint32_t bodyLen;
-  uint32_t bodyIndex;
   char uuid[37];
 };
 #pragma pack(pop)
@@ -57,9 +56,9 @@ struct BodyPacket {
 
 class Message {
  public:
-  Message() : Message("\n") {}
-  explicit Message(const std::string& uuid) {
-    setUuid(uuid);
+  Message() {}
+  explicit Message(const std::string& serializedMaessage) {
+    deserialize(serializedMaessage);
   }
 
   ~Message() = default;
@@ -82,7 +81,7 @@ class Message {
   }
 
   void setUuid(const std::string& uuid) {
-    // uuid.copy(m_header.uuid, uuid.size()+1);
+    uuid.copy(m_header.uuid, uuid.size()+1);
     // std::copy(&uuid, &(uuid) + 36, m_header.uuid);
   }
 
@@ -161,31 +160,35 @@ class Message {
   void printPacketforDubugging() {
     std::string uuid(m_header.uuid);
     std::cout << "-----------------------\n";
-    std::cout << "Header\n";
+    std::cout << "======== Header ========\n";
     std::cout << "command : " <<
                   CommandToString(static_cast<Command>(m_header.command)) << std::endl;
-    std::cout << "headerSize : " << m_header.headerSize << std::endl;
+    std::cout << "headerSize : " << static_cast<unsigned>(m_header.headerSize) << std::endl;
     std::cout << "bodySize : " << m_header.bodySize << std::endl;
     std::cout << "size : " << m_header.size << std::endl;
     std::cout << "serviceNameLen : " << m_header.serviceNameLen << std::endl;
     std::cout << "rpcNameLen : " << m_header.rpcNameLen << std::endl;
     std::cout << "serializedJsonLen : " << m_header.serializedJsonLen << std::endl;
     std::cout << "bodyLen : " << m_header.bodyLen << std::endl;
-    std::cout << "bodyIndex : " << m_header.bodyIndex << std::endl;
+    std::cout << "bodyIndex : " << static_cast<unsigned>(m_header.bodyIndex) << std::endl;
     std::cout << "uuid : " << uuid << std::endl;
-    std::cout << "Header\n";
-    std::cout << "bodyIndex : " << m_body.serviceName << std::endl;
-    std::cout << "bodyIndex : " << m_body.rpcName << std::endl;
-    std::cout << "bodyIndex : " << m_body.serializedJson << std::endl;
+    std::cout << "======== Body ========\n";
+    std::cout << "serviceName : " << m_body.serviceName << std::endl;
+    std::cout << "rpcName : " << m_body.rpcName << std::endl;
+    std::cout << "serializedJson : " << m_body.serializedJson << std::endl;
   }
 
  private:
-  const std::string& serializedHeader() const {
-    std::string str(reinterpret_cast<const char*>(&m_header));
-    return str;
+  const std::string& serializedHeader() {
+    char buf[HEADER_SIZE];
+    std::copy(reinterpret_cast<char*>(&m_header),
+              reinterpret_cast<char*>(&m_header) + HEADER_SIZE,
+              buf);
+
+    return std::string(buf);
   }
 
-  const std::string& serializedBody() const {
+  const std::string& serializedBody() {
     std::string str;
     str.append(m_body.serviceName);
     str.append(m_body.rpcName);

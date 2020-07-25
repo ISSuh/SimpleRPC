@@ -54,10 +54,10 @@ class ClientSession : public Session {
                                          readHandler[cmd]);
   }
 
-  void write(Command cmd, Message& msg) override {
+  void write(Command cmd, const std::string& serializedMessage) override {
     BOOST_LOG_TRIVIAL(info) << Session::getUUID() << ": Write - " << CommandToString(cmd);
 
-    Session::getSocket().async_write_some(asio::buffer(msg.serialize(), msg.getSize()),
+    Session::getSocket().async_write_some(asio::buffer(serializedMessage, serializedMessage.size()),
                                           writeHandler[cmd]);
   }
 

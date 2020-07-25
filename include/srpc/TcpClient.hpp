@@ -46,11 +46,12 @@ class TcpClient : public Client {
                const std::string& rpcName,
                const std::string& paramTest) {
     if (m_session.isConnectd()) {
-      Message msg(m_session.getUUID());
+      Message msg;
+      msg.setUuid(m_session.getUUID());
       msg.setCommand(Command::REQUEST);
       msg.setBody(serviceName, rpcName, paramTest);
 
-      m_session.write(Command::REQUEST, msg);
+      m_session.write(Command::REQUEST, msg.serialize());
     }
   }
 
@@ -60,6 +61,9 @@ class TcpClient : public Client {
 
   void onRead(const std::string& serializedMessage) override {
     BOOST_LOG_TRIVIAL(info) << "onRead";
+    Message msg(serializedMessage);
+
+    msg.printPacketforDubugging();
   }
 
   void onWrite() override {

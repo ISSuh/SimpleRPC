@@ -26,6 +26,7 @@
 
 #include "Server.hpp"
 #include "ServerSession.hpp"
+#include "Message.hpp"
 
 namespace srpc {
 
@@ -46,13 +47,13 @@ class TcpServer : public Server {
       m_ioContext.run();
     });
 
-    // while (true) {
-    //   for (const auto& iter : m_sessionMap) {
-    //     iter.second->read(Command::REQUEST);
-    //   }
+    while (true) {
+      for (const auto& iter : m_sessionMap) {
+        iter.second->read(Command::REQUEST);
+      }
 
-    //   usleep(100000);
-    // }
+      usleep(100000);
+    }
 
     if (t.joinable()) {
       t.join();
@@ -61,6 +62,7 @@ class TcpServer : public Server {
 
   void onRead(const std::string& uuid, const std::string& serializedMessage) override {
     BOOST_LOG_TRIVIAL(info) << "onRead - " <<  uuid;
+    Message msg(serializedMessage);
   }
 
   void onWrite(const std::string& uuid) override {
@@ -92,10 +94,11 @@ class TcpServer : public Server {
 
       BOOST_LOG_TRIVIAL(info) << "Accept New Client - " << strUUID << " / " << m_sessionMap.size();
 
-      Message msg(strUUID);
+      Message msg;
+      msg.setUuid(strUUID);
       msg.setCommand(Command::ACCEPT);
 
-      session->write(Command::ACCEPT, msg);
+      session->write(Command::ACCEPT, msg.serialize());
     } else {
       BOOST_LOG_TRIVIAL(error) << "Accept Error! - " << error.message();
       delete session;
