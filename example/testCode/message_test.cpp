@@ -12,6 +12,7 @@ int main(int argc, char* argv[]) {
 
   srpc::Uuid newUUID = boost::uuids::random_generator()();
   std::string strUUID = to_string(newUUID);
+  std::cout << strUUID << std::endl;
 
   srpc::Message serializeMessage;
   serializeMessage.setUuid(strUUID);
@@ -20,9 +21,8 @@ int main(int argc, char* argv[]) {
   serializeMessage.printPacketforDubugging();
   std::cout << std::endl;
 
-  std::vector<char> serializedMessage(serializeMessage.serialize());
-  std::cout << serializedMessage.size() << std::endl;
-
+  std::string serializedMessage(serializeMessage.serialize());
+  
   srpc::Message deserializedMsg(serializedMessage);
   deserializedMsg.printPacketforDubugging();
 
@@ -30,20 +30,20 @@ int main(int argc, char* argv[]) {
 
   srpc::Uuid newUUID_1 = boost::uuids::random_generator()();
   std::string strUUID_1 = to_string(newUUID_1);
+  std::cout << strUUID_1 << std::endl;
 
   srpc::Message serializeMessage_1;
   serializeMessage_1.setUuid(strUUID_1);
   serializeMessage_1.setCommand(srpc::Command::ACCEPT);
 
-  serializeMessage_1.setServiceName("myService");
-  serializeMessage_1.setRpcName("myRPC");
+  serializeMessage_1.setServiceName("myServicadafasdfse");
+  serializeMessage_1.setRpcName("myRPCasdfadf");
   serializeMessage_1.setParams("{\"params\":\"hello\"}");
 
   serializeMessage_1.printPacketforDubugging();
   std::cout << std::endl;
 
-  std::vector<char> serializedMessage_1(serializeMessage_1.serialize());
-  std::cout << serializedMessage_1.size() << std::endl;
+  std::string serializedMessage_1(serializeMessage_1.serialize());
 
   srpc::Message deserializedMsg_1(serializedMessage_1);
   deserializedMsg_1.printPacketforDubugging();
