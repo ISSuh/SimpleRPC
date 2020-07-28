@@ -59,8 +59,9 @@ class TcpClient : public Client {
     BOOST_LOG_TRIVIAL(info) << "onConnect";
   }
 
-  void onRead(const std::string& serializedMessage) override {
+  void onRead(std::string serializedMessage) override {
     BOOST_LOG_TRIVIAL(info) << "onRead";
+
     Message msg(serializedMessage);
 
     msg.printPacketforDubugging();

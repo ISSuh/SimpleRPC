@@ -58,7 +58,8 @@ struct BodyPacket {
 class Message {
  public:
   Message() {}
-  explicit Message(const std::string& serializedMessage) {
+  
+  explicit Message(std::string serializedMessage) {
     deserialize(serializedMessage);
   }
 
@@ -140,10 +141,10 @@ class Message {
    */
   std::string serialize() const {
     if (m_header.bodySize == 0) {
-      return std::move(serializedHeader());
+      return serializedHeader();
     }
 
-    return std::move(serializedHeader() + serializedBody());
+    return serializedHeader() + serializedBody();
   }
 
   void deserialize(const std::string& serializedMessage) {
@@ -180,11 +181,16 @@ class Message {
  private:
   std::string serializedHeader() const {
     const char* buf = reinterpret_cast<const char*>(&m_header);
-    return std::move(std::string(buf, buf + HEADER_SIZE));
+    return std::string(buf, buf + HEADER_SIZE);
   }
 
   std::string serializedBody() const {
-    return std::move(m_body.serviceName + m_body.rpcName + m_body.serializedJson);
+    std::string str;
+    str.append(m_body.serviceName);
+    str.append(m_body.rpcName);
+    str.append(m_body.serializedJson);
+
+    return str;
   }
 
   void deserializeHeader(const std::string& header) {

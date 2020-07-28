@@ -24,7 +24,7 @@ class Client {
                        const std::string& params) = 0;
 
   virtual void onConnect() = 0;
-  virtual void onRead(const std::string& serializedMessage) = 0;
+  virtual void onRead(std::string serializedMessage) = 0;
   virtual void onWrite() = 0;
 };
 

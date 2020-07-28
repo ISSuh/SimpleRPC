@@ -50,7 +50,7 @@ class ClientSession : public Session {
   void read(Command cmd) override {
     BOOST_LOG_TRIVIAL(info) << Session::getUUID() << ": Read - " << CommandToString(cmd);
 
-    Session::getSocket().async_read_some(asio::buffer(m_readBuff, MAX_LEN),
+    Session::getSocket().async_read_some(asio::buffer(&m_readBuff[0], MAX_LEN),
                                          readHandler[cmd]);
   }
 
@@ -152,8 +152,9 @@ void ClientSession<T>::acceptReadHandler(const ErrorCode& error, size_t len) {
   if (!error) {
     BOOST_LOG_TRIVIAL(info) << "Read - " << len;
 
-    m_isConnected.store(true);
-    m_system.onRead(std::string(m_readBuff));
+    // m_isConnected.store(true);
+    std::string str(m_readBuff, m_readBuff + len);
+    m_system.onRead(str);
   } else {
     BOOST_LOG_TRIVIAL(error) << "Read Fail! - " << error.message();
   }
@@ -166,7 +167,7 @@ void ClientSession<T>::requestReadHandler(const ErrorCode& error, size_t len) {
   if (!error) {
     BOOST_LOG_TRIVIAL(info) << "Read - " << len;
 
-    m_system.onRead(std::string(m_readBuff));
+    m_system.onRead(std::string(m_readBuff, m_readBuff + len));
   } else {
     BOOST_LOG_TRIVIAL(error) << Session::getUUID() << ": Read Fail! - " << error.message();
   }
@@ -179,7 +180,7 @@ void ClientSession<T>::responseReadHandler(const ErrorCode& error, size_t len) {
   if (!error) {
     BOOST_LOG_TRIVIAL(info) << "Read - " << len;
 
-    m_system.onRead(std::string(m_readBuff));
+    m_system.onRead(std::string(m_readBuff, m_readBuff + len));
   } else {
     BOOST_LOG_TRIVIAL(error) << Session::getUUID() << ": Read Fail! - " << error.message();
   }
