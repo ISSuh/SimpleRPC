@@ -4,15 +4,15 @@
  * 
  */
 
-#ifndef SRPC_RPCSERVICE_HPP_
-#define SRPC_RPCSERVICE_HPP_
+#ifndef SRPC_RPC_RPCSERVICE_HPP_
+#define SRPC_RPC_RPCSERVICE_HPP_
 
 #include <string>
 #include <vector>
 #include <map>
 #include <functional>
 
-#include "Common.hpp"
+#include "../helper/Common.hpp"
 
 namespace srpc {
 
@@ -37,4 +37,4 @@ class RPCServcie {
 
 }  // namespace srpc
 
-#endif  // SRPC_RPCSERVICE_HPP_
+#endif  // SRPC_RPC_RPCSERVICE_HPP_

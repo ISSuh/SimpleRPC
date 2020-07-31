@@ -4,8 +4,8 @@
  * 
  */
 
-#ifndef SRPC_CLIENT_HPP_
-#define SRPC_CLIENT_HPP_
+#ifndef SRPC_NET_CLIENT_CLIENT_HPP_
+#define SRPC_NET_CLIENT_CLIENT_HPP_
 
 #include <string>
 
@@ -30,4 +30,4 @@ class Client {
 
 }  // namespace srpc
 
-#endif  // SRPC_CLIENT_HPP_
+#endif  // SRPC_NET_CLIENT_CLIENT_HPP_

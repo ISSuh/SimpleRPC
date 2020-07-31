@@ -14,18 +14,18 @@
 
 #include <boost/asio.hpp>
 
-#include "Common.hpp"
-#include "Creator.hpp"
-#include "Server.hpp"
+#include "helper/Common.hpp"
+#include "net/NetCreator.hpp"
+#include "net/server/Server.hpp"
 
 namespace srpc {
 
 class ServerHandle {
  public:
   explicit ServerHandle(ProtocolType protocolType, FunctionType funcType)
-    : m_protocolType(protocolType),
-      m_funcType(funcType),
-      m_server(std::move(m_creator.createSystem(protocolType, funcType))) {}
+    : m_server(std::move(m_creator.createSystem(protocolType, funcType))),
+      m_protocolType(protocolType),
+      m_funcType(funcType) {}
 
   ~ServerHandle() = default;
 
@@ -37,12 +37,15 @@ class ServerHandle {
     m_server->run();
   }
 
- private:
-  ProtocolType m_protocolType;
-  FunctionType m_funcType;
+  ProtocolType getProtocolType() const { return m_protocolType; }
+  FunctionType getFunctionType() const { return m_funcType; }
 
+ private:
   ServerCreator m_creator;
   std::unique_ptr<Server> m_server;
+
+  ProtocolType m_protocolType;
+  FunctionType m_funcType;
 };
 
 }  // namespace srpc

@@ -4,8 +4,8 @@
  * 
  */
 
-#ifndef SRPC_CLIENTSESSION_HPP_
-#define SRPC_CLIENTSESSION_HPP_
+#ifndef SRPC_NET_SESSION_SERVERSESSION_HPP_
+#define SRPC_NET_SESSION_SERVERSESSION_HPP_
 
 #include <iostream>
 #include <string>
@@ -17,48 +17,45 @@
 
 #include <boost/asio.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <boost/log/trivial.hpp>
 
-#include "Common.hpp"
-#include "Message.hpp"
+#include "../../helper/Common.hpp"
+#include "../message/Message.hpp"
 #include "Session.hpp"
 
 namespace srpc {
 
 template<typename T>
-class ClientSession : public Session {
+class ServerSession : public Session {
  public:
-  explicit ClientSession(IoService& ioContext, T& system)
+  explicit ServerSession(IoService& ioContext, T& system)
       : Session(ioContext),
         m_system(system),
         m_isConnected(false) {
-    registReadHandler();
-    registWriteHandler();
+      registReadHandler();
+      registWriteHandler();
   }
 
-  ~ClientSession() = default;
-
-  void connect(const TcpResolverIterator& endpointIter) override {
-    BOOST_LOG_TRIVIAL(info) << "connectSession";
-
-    asio::async_connect(Session::getSocket(), endpointIter,
-                              std::bind(&ClientSession::connectHandler,
-                                         this,
-                                         std::placeholders::_1));
-  }
+  ~ServerSession() = default;
 
   void read(Command cmd) override {
     BOOST_LOG_TRIVIAL(info) << Session::getUUID() << ": Read - " << CommandToString(cmd);
 
-    Session::getSocket().async_read_some(asio::buffer(&m_readBuff[0], MAX_LEN),
+    Session::getSocket().async_read_some(asio::buffer(m_readBuff, MAX_LEN),
                                          readHandler[cmd]);
   }
 
   void write(Command cmd, const std::string& serializedMessage) override {
     BOOST_LOG_TRIVIAL(info) << Session::getUUID() << ": Write - " << CommandToString(cmd);
 
-    Session::getSocket().async_write_some(asio::buffer(serializedMessage, serializedMessage.size()),
-                                          writeHandler[cmd]);
+    Message msg(serializedMessage);
+
+    msg.printPacketforDubugging();
+
+    Session::getSocket().async_write_some(
+                                asio::buffer(serializedMessage, serializedMessage.size()),
+                                writeHandler[cmd]);
   }
 
   void close() override {
@@ -82,31 +79,25 @@ class ClientSession : public Session {
  private:
   void registReadHandler() {
     readHandler = {
-      {Command::ACCEPT, std::bind(&ClientSession::acceptReadHandler, this,
+      {Command::REQUEST, std::bind(&ServerSession::requestReadHandler, this,
                                    std::placeholders::_1, std::placeholders::_2)},
-      {Command::REQUEST, std::bind(&ClientSession::requestReadHandler, this,
-                                   std::placeholders::_1, std::placeholders::_2)},
-      {Command::REPONSE, std::bind(&ClientSession::responseReadHandler, this,
+      {Command::REPONSE, std::bind(&ServerSession::responseReadHandler, this,
                                    std::placeholders::_1, std::placeholders::_2)}
     };
   }
 
   void registWriteHandler() {
     writeHandler = {
-      {Command::ACCEPT, std::bind(&ClientSession::acceptWriteHandler, this,
+      {Command::ACCEPT, std::bind(&ServerSession::acceptWriteHandler, this,
                                    std::placeholders::_1, std::placeholders::_2)},
-      {Command::REQUEST, std::bind(&ClientSession::requestWriteHandler, this,
+      {Command::REQUEST, std::bind(&ServerSession::requestWriteHandler, this,
                                    std::placeholders::_1, std::placeholders::_2)},
-      {Command::REPONSE, std::bind(&ClientSession::reponseWriteHandler, this,
+      {Command::REPONSE, std::bind(&ServerSession::reponseWriteHandler, this,
                                    std::placeholders::_1, std::placeholders::_2)}
     };
   }
 
-  // Connect Handler
-  void connectHandler(const ErrorCode& error);
-
   // Read Handler
-  void acceptReadHandler(const ErrorCode& error, size_t len);
   void requestReadHandler(const ErrorCode& error, size_t len);
   void responseReadHandler(const ErrorCode& error, size_t len);
 
@@ -126,108 +117,91 @@ class ClientSession : public Session {
 };
 
 /**
- * Connect Handler
- */
-template<class T>
-void ClientSession<T>::connectHandler(const ErrorCode& error) {
-  BOOST_LOG_TRIVIAL(info) << "connectHandler";
-
-  if (!error) {
-    BOOST_LOG_TRIVIAL(info) << "Connect Success!";
-
-    read(Command::ACCEPT);
-    m_system.onConnect();
-  } else {
-    BOOST_LOG_TRIVIAL(error) << "Connect Fail! : " << error.message();
-  }
-}
-
-/**
  * Read Handler
  */
 template<class T>
-void ClientSession<T>::acceptReadHandler(const ErrorCode& error, size_t len) {
-  BOOST_LOG_TRIVIAL(info) << "acceptReadHandler";
-
-  if (!error) {
-    BOOST_LOG_TRIVIAL(info) << "Read - " << len;
-
-    // m_isConnected.store(true);
-    std::string str(m_readBuff, m_readBuff + len);
-    m_system.onRead(str);
-  } else {
-    BOOST_LOG_TRIVIAL(error) << "Read Fail! - " << error.message();
-  }
-}
-
-template<class T>
-void ClientSession<T>::requestReadHandler(const ErrorCode& error, size_t len) {
+void ServerSession<T>::requestReadHandler(const ErrorCode& error, size_t len) {
   BOOST_LOG_TRIVIAL(info) << Session::getUUID() <<  "requestReadHandler";
 
   if (!error) {
     BOOST_LOG_TRIVIAL(info) << "Read - " << len;
 
-    m_system.onRead(std::string(m_readBuff, m_readBuff + len));
+    m_system.onRead(Session::getUUID(), std::string(m_readBuff, m_readBuff + len));
+    read(Command::REQUEST);
   } else {
     BOOST_LOG_TRIVIAL(error) << Session::getUUID() << ": Read Fail! - " << error.message();
+
+    m_system.unRegistMap(Session::getUUID());
   }
 }
 
 template<class T>
-void ClientSession<T>::responseReadHandler(const ErrorCode& error, size_t len) {
+void ServerSession<T>::responseReadHandler(const ErrorCode& error, size_t len) {
   BOOST_LOG_TRIVIAL(info) << Session::getUUID() <<  "responseReadHandler";
 
   if (!error) {
     BOOST_LOG_TRIVIAL(info) << "Read - " << len;
 
-    m_system.onRead(std::string(m_readBuff, m_readBuff + len));
+    m_system.onRead(Session::getUUID(), std::string(m_readBuff, m_readBuff + len));
+    read(Command::REQUEST);
   } else {
     BOOST_LOG_TRIVIAL(error) << Session::getUUID() << ": Read Fail! - " << error.message();
+
+    m_system.unRegistMap(Session::getUUID());
   }
 }
 
 /**
- * Read Handler
+ * Write Handler
  */
 template<class T>
-void ClientSession<T>::acceptWriteHandler(const ErrorCode& error, size_t len) {
-  BOOST_LOG_TRIVIAL(info) << Session::getUUID() <<  "acceptWriteHandler";
+void ServerSession<T>::acceptWriteHandler(const ErrorCode& error, size_t len) {
+  BOOST_LOG_TRIVIAL(info) << Session::getUUID() <<  ": acceptWriteHandler";
 
   if (!error) {
     BOOST_LOG_TRIVIAL(info) << Session::getUUID() << ": Write Success - " << len;
 
-    m_system.onWrite();
+    m_isConnected.store(true);
+    m_system.onWrite(Session::getUUID());
+
+    read(Command::REQUEST);
   } else {
     BOOST_LOG_TRIVIAL(error) << Session::getUUID() << ": Write Fail! - " << error.message();
+
+    m_system.unRegistMap(Session::getUUID());
   }
 }
 
 template<class T>
-void ClientSession<T>::requestWriteHandler(const ErrorCode& error, size_t len) {
+void ServerSession<T>::requestWriteHandler(const ErrorCode& error, size_t len) {
   BOOST_LOG_TRIVIAL(info) << Session::getUUID() <<  "requestWriteHandler";
 
   if (!error) {
     BOOST_LOG_TRIVIAL(info) << Session::getUUID() << ": Write Success - " << len;
 
-    m_system.onWrite();
+    m_system.onWrite(Session::getUUID());
   } else {
     BOOST_LOG_TRIVIAL(error) << Session::getUUID() << ": Write Fail! - " << error.message();
+
+    m_system.unRegistMap(Session::getUUID());
   }
 }
 
 template<class T>
-void ClientSession<T>::reponseWriteHandler(const ErrorCode& error, size_t len) {
+void ServerSession<T>::reponseWriteHandler(const ErrorCode& error, size_t len) {
   BOOST_LOG_TRIVIAL(info) << "reponseWriteHandler";
 
   if (!error) {
     BOOST_LOG_TRIVIAL(info) << Session::getUUID() << ": Write Success - " << len;
 
-    m_system.onWrite();
+    m_system.onWrite(Session::getUUID());
   } else {
     BOOST_LOG_TRIVIAL(error) << Session::getUUID() << ": Write Fail! - " << error.message();
+
+    m_system.unRegistMap(Session::getUUID());
   }
 }
 
 }  // namespace srpc
 
-#endif  // SRPC_CLIENTSESSION_HPP_
+#endif  // SRPC_NET_SESSION_SERVERSESSION_HPP_

@@ -4,15 +4,15 @@
  * 
  */
 
-#ifndef SRPC_MESSAGE_HPP_
-#define SRPC_MESSAGE_HPP_
+#ifndef SRPC_NET_MESSAGE_MESSAGE_HPP_
+#define SRPC_NET_MESSAGE_MESSAGE_HPP_
 
 #include <string>
 #include <vector>
 #include <algorithm>
 #include <utility>
 
-#include "Common.hpp"
+#include "../../helper/Common.hpp"
 
 namespace srpc {
 
@@ -69,9 +69,13 @@ class Message {
 
   ~Message() = default;
 
+  Command getCommand() const { return static_cast<Command>(m_header.command); }
   size_t getSize() const { return m_header.size; }
   size_t getHeaderSize() const { return m_header.headerSize; }
   size_t getBodySize() const { return m_header.bodySize; }
+  std::string getUuid() const {
+    return std::string(m_header.uuid);
+  }
 
   const HeaderPacket& getHeader() const { return m_header; }
   const BodyPacket& getBody() const { return m_body; }
@@ -87,7 +91,6 @@ class Message {
 
   void setUuid(const std::string& uuid) {
     std::copy(&uuid[0], &uuid[0] + UUID_SIZE, m_header.uuid);
-    m_header.uuid[36] = '\n';
   }
 
   void setCommand(Command cmd) {
@@ -109,35 +112,24 @@ class Message {
                const std::string& rpcName,
                const std::string& serializedParams) {
     m_body.serviceName = serviceName;
-    m_header.serviceNameLen = serviceName.size();
-
-    m_body.serviceName = serviceName;
-    m_header.serviceNameLen = serviceName.size();
-
     m_body.rpcName = rpcName;
-    m_header.rpcNameLen = rpcName.size();
+    m_body.serializedJson = serializedParams;
 
     updatePacketSize();
   }
 
   void setServiceName(const std::string& serviceName) {
     m_body.serviceName = serviceName;
-    m_header.serviceNameLen = serviceName.size();
-
     updatePacketSize();
   }
 
   void setRpcName(const std::string& rpcName) {
     m_body.rpcName = rpcName;
-    m_header.rpcNameLen = rpcName.size();
-
     updatePacketSize();
   }
 
   void setParams(const std::string& serializedParams) {
     m_body.serializedJson = serializedParams;
-    m_header.serializedJsonLen = serializedParams.size();
-
     updatePacketSize();
   }
 
@@ -230,4 +222,4 @@ class Message {
 
 }  // namespace srpc
 
-#endif  // SRPC_MESSAGE_HPP_
+#endif  // SRPC_NET_MESSAGE_MESSAGE_HPP_

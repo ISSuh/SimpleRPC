@@ -4,8 +4,8 @@
  * 
  */
 
-#ifndef SRPC_COMMON_HPP_
-#define SRPC_COMMON_HPP_
+#ifndef SRPC_HELPER_COMMON_HPP_
+#define SRPC_HELPER_COMMON_HPP_
 
 #include <string>
 #include <map>
@@ -77,4 +77,4 @@ std::string CommandToString(Command cmd) {
 
 }  // namespace srpc
 
-#endif  // SRPC_COMMON_HPP_
+#endif  // SRPC_HELPER_COMMON_HPP_

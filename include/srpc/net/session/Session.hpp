@@ -4,8 +4,8 @@
  * 
  */
 
-#ifndef SRPC_SESSION_HPP_
-#define SRPC_SESSION_HPP_
+#ifndef SRPC_NET_SESSION_SESSION_HPP_
+#define SRPC_NET_SESSION_SESSION_HPP_
 
 #include <iostream>
 #include <string>
@@ -16,8 +16,8 @@
 #include <boost/asio.hpp>
 #include <boost/uuid/uuid.hpp>
 
-#include "Common.hpp"
-#include "Message.hpp"
+#include "../../helper/Common.hpp"
+#include "../message/Message.hpp"
 
 namespace srpc {
 
@@ -45,4 +45,4 @@ class Session {
 
 }  // namespace srpc
 
-#endif  // SRPC_SESSION_HPP_
+#endif  // SRPC_NET_SESSION_SESSION_HPP_

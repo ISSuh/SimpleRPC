@@ -4,8 +4,8 @@
  * 
  */
 
-#ifndef SRPC_TCPSERVER_HPP_
-#define SRPC_TCPSERVER_HPP_
+#ifndef SRPC_NET_SERVER_TCPSERVER_HPP_
+#define SRPC_NET_SERVER_TCPSERVER_HPP_
 
 #include <iostream>
 #include <string>
@@ -25,8 +25,8 @@
 #include <boost/log/trivial.hpp>
 
 #include "Server.hpp"
-#include "ServerSession.hpp"
-#include "Message.hpp"
+#include "../session/ServerSession.hpp"
+#include "../message/Message.hpp"
 
 namespace srpc {
 
@@ -47,14 +47,6 @@ class TcpServer : public Server {
       m_ioContext.run();
     });
 
-    while (true) {
-      for (const auto& iter : m_sessionMap) {
-        iter.second->read(Command::REQUEST);
-      }
-
-      usleep(100000);
-    }
-
     if (t.joinable()) {
       t.join();
     }
@@ -63,6 +55,7 @@ class TcpServer : public Server {
   void onRead(const std::string& uuid, const std::string& serializedMessage) override {
     BOOST_LOG_TRIVIAL(info) << "onRead - " <<  uuid;
     Message msg(serializedMessage);
+    msg.printPacketforDubugging();
   }
 
   void onWrite(const std::string& uuid) override {
@@ -114,4 +107,4 @@ class TcpServer : public Server {
 
 }   // namespace srpc
 
-#endif  // SRPC_TCPSERVER_HPP_
+#endif  // SRPC_NET_SERVER_TCPSERVER_HPP_

@@ -5,7 +5,7 @@ message("SimpleRPC Examples")
 SET ( SUBDIRS
   client
   server
-  testCode
+  # testCode
 )
 
 foreach(SUBDIR ${SUBDIRS})

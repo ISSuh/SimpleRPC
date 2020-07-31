@@ -4,13 +4,13 @@
  * 
  */
 
-#ifndef SRPC_SERVER_HPP_
-#define SRPC_SERVER_HPP_
+#ifndef SRPC_NET_SERVER_SERVER_HPP_
+#define SRPC_NET_SERVER_SERVER_HPP_
 
 #include <string>
 
-#include "Common.hpp"
-#include "Session.hpp"
+#include "../../helper/Common.hpp"
+#include "../session/Session.hpp"
 
 namespace srpc {
 
@@ -31,4 +31,4 @@ class Server {
 
 }  // namespace srpc
 
-#endif  // SRPC_SERVER_HPP_
+#endif  // SRPC_NET_SERVER_SERVER_HPP_

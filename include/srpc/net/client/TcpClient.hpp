@@ -4,8 +4,8 @@
  * 
  */
 
-#ifndef SRPC_TCPCLIENT_HPP_
-#define SRPC_TCPCLIENT_HPP_
+#ifndef SRPC_NET_CLIENT_TCPCLIENT_HPP_
+#define SRPC_NET_CLIENT_TCPCLIENT_HPP_
 
 #include <iostream>
 #include <string>
@@ -15,9 +15,9 @@
 #include <boost/asio.hpp>
 #include <boost/log/trivial.hpp>
 
-#include "Common.hpp"
 #include "Client.hpp"
-#include "ClientSession.hpp"
+#include "../../helper/Common.hpp"
+#include "../session/ClientSession.hpp"
 
 namespace srpc {
 
@@ -63,6 +63,14 @@ class TcpClient : public Client {
     Message msg(serializedMessage);
 
     msg.printPacketforDubugging();
+
+    switch (msg.getCommand()) {
+    case Command::ACCEPT :
+      m_session.setUUID(msg.getUuid());
+      break;
+    default:
+      break;
+    }
   }
 
   void onWrite() override {
@@ -85,4 +93,4 @@ class TcpClient : public Client {
 
 }   // namespace srpc
 
-#endif  // SRPC_TCPCLIENT_HPP_
+#endif  // SRPC_NET_CLIENT_TCPCLIENT_HPP_

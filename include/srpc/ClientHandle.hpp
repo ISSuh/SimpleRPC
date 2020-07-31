@@ -14,16 +14,18 @@
 
 #include <boost/asio.hpp>
 
-#include "Common.hpp"
-#include "Creator.hpp"
-#include "Client.hpp"
+#include "helper/Common.hpp"
+#include "net/NetCreator.hpp"
+#include "net/client/Client.hpp"
 
 namespace srpc {
 
 class ClientHandle {
  public:
   explicit ClientHandle(ProtocolType protocolType, FunctionType funcType)
-    : m_client(std::move(m_creator.createSystem(protocolType, funcType))) {}
+    : m_client(std::move(m_creator.createSystem(protocolType, funcType))),
+      m_protocolType(protocolType),
+      m_funcType(funcType) {}
 
   ~ClientHandle() {}
 
@@ -41,16 +43,15 @@ class ClientHandle {
     m_client->request(serviceName, rpcName, params);
   }
 
+  ProtocolType getProtocolType() const { return m_protocolType; }
+  FunctionType getFunctionType() const { return m_funcType; }
+
  private:
-  IoService m_ioContext;
-
-  ProtocolType m_protocolType;
-  FunctionType m_funcType;
-
   ClientCreator m_creator;
   std::unique_ptr<Client> m_client;
 
-  std::thread t;
+  ProtocolType m_protocolType;
+  FunctionType m_funcType;
 };
 
 }   // namespace srpc

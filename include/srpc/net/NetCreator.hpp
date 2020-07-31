@@ -4,14 +4,15 @@
  * 
  */
 
-#ifndef SRPC_CREATOR_HPP_
-#define SRPC_CREATOR_HPP_
+#ifndef SRPC_NET_NETCREATOR_HPP_
+#define SRPC_NET_NETCREATOR_HPP_
 
 #include <iostream>
 
-#include "Common.hpp"
-#include "TcpServer.hpp"
-#include "TcpClient.hpp"
+#include "../helper/Common.hpp"
+
+#include "server/TcpServer.hpp"
+#include "client/TcpClient.hpp"
 
 namespace srpc {
 
@@ -84,5 +85,5 @@ class ClientCreator : public Creator<Client> {
 
 }  // namespace srpc
 
-#endif  // SRPC_CREATOR_HPP_
+#endif  // SRPC_NET_NETCREATOR_HPP_
 
