@@ -56,6 +56,17 @@ class TcpServer : public Server {
     BOOST_LOG_TRIVIAL(info) << "onRead - " <<  uuid;
     Message msg(serializedMessage);
     msg.printPacketforDubugging();
+
+    switch (msg.getCommand()) {
+    case Command::REQUEST: {
+        Message responseMsg(uuid, Command::REPONSE);
+        responseMsg.setBody(msg.getBody());
+        m_sessionMap[uuid]->write(Command::REPONSE, responseMsg.serialize());
+      }
+      break;
+    default:
+      break;
+    }
   }
 
   void onWrite(const std::string& uuid) override {

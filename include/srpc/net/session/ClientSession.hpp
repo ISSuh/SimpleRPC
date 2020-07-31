@@ -209,6 +209,7 @@ void ClientSession<T>::requestWriteHandler(const ErrorCode& error, size_t len) {
     BOOST_LOG_TRIVIAL(info) << Session::getUUID() << ": Write Success - " << len;
 
     m_system.onWrite();
+    read(Command::REPONSE);
   } else {
     BOOST_LOG_TRIVIAL(error) << Session::getUUID() << ": Write Fail! - " << error.message();
   }

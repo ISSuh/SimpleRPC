@@ -68,6 +68,8 @@ class TcpClient : public Client {
     case Command::ACCEPT :
       m_session.setUUID(msg.getUuid());
       break;
+    case Command::REPONSE :
+      break;
     default:
       break;
     }
