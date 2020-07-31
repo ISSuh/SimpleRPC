@@ -14,15 +14,13 @@ int main(int argc, char* argv[]) {
   std::string strUUID = to_string(newUUID);
   std::cout << strUUID << std::endl;
 
-  srpc::Message serializeMessage;
-  serializeMessage.setUuid(strUUID);
-  serializeMessage.setCommand(srpc::Command::ACCEPT);
+  srpc::Message serializeMessage(strUUID, srpc::Command::ACCEPT);
 
   serializeMessage.printPacketforDubugging();
   std::cout << std::endl;
 
   std::string serializedMessage(serializeMessage.serialize());
-  
+
   srpc::Message deserializedMsg(serializedMessage);
   deserializedMsg.printPacketforDubugging();
 
@@ -32,9 +30,7 @@ int main(int argc, char* argv[]) {
   std::string strUUID_1 = to_string(newUUID_1);
   std::cout << strUUID_1 << std::endl;
 
-  srpc::Message serializeMessage_1;
-  serializeMessage_1.setUuid(strUUID_1);
-  serializeMessage_1.setCommand(srpc::Command::ACCEPT);
+  srpc::Message serializeMessage_1(strUUID_1, srpc::Command::ACCEPT);
 
   serializeMessage_1.setServiceName("myServicadafasdfse");
   serializeMessage_1.setRpcName("myRPCasdfadf");

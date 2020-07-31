@@ -46,9 +46,7 @@ class TcpClient : public Client {
                const std::string& rpcName,
                const std::string& paramTest) override {
     if (m_session.isConnectd()) {
-      Message msg;
-      msg.setUuid(m_session.getUUID());
-      msg.setCommand(Command::REQUEST);
+      Message msg(m_session.getUUID(), Command::REQUEST);
       msg.setBody(serviceName, rpcName, paramTest);
 
       m_session.write(Command::REQUEST, msg.serialize());

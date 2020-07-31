@@ -94,9 +94,7 @@ class TcpServer : public Server {
 
       BOOST_LOG_TRIVIAL(info) << "Accept New Client - " << strUUID << " / " << m_sessionMap.size();
 
-      Message msg;
-      msg.setUuid(strUUID);
-      msg.setCommand(Command::ACCEPT);
+      Message msg(strUUID, Command::ACCEPT);
 
       session->write(Command::ACCEPT, msg.serialize());
     } else {

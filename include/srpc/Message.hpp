@@ -17,6 +17,7 @@
 namespace srpc {
 
 const size_t HEADER_SIZE = 65;
+const size_t UUID_SIZE = 36;
 
 // #pragma pack(push, 1)
 struct HeaderPacket {
@@ -43,7 +44,7 @@ struct HeaderPacket {
   uint32_t rpcNameLen;
   uint32_t serializedJsonLen;
   uint32_t bodyLen;
-  std::string uuid;
+  char uuid[37];
 };
 // #pragma pack(pop)
 
@@ -57,8 +58,11 @@ struct BodyPacket {
 
 class Message {
  public:
-  Message() {}
-  
+  Message(const std::string& uuid, Command cmd) {
+    setUuid(uuid);
+    setCommand(cmd);
+  }
+
   explicit Message(std::string serializedMessage) {
     deserialize(serializedMessage);
   }
@@ -82,7 +86,8 @@ class Message {
   }
 
   void setUuid(const std::string& uuid) {
-    m_header.uuid = uuid;
+    std::copy(&uuid[0], &uuid[0] + UUID_SIZE, m_header.uuid);
+    m_header.uuid[36] = '\n';
   }
 
   void setCommand(Command cmd) {
