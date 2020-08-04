@@ -11,6 +11,8 @@
 #include <map>
 #include <memory>
 
+#include <cxxabi.h>
+
 #include <boost/asio.hpp>
 #include <boost/uuid/uuid.hpp>
 
@@ -77,10 +79,10 @@ std::string CommandToString(Command cmd) {
 }
 
 std::string demangle(const char* mangled) {
-      int status;
-      std::unique_ptr<char[], void (*)(void*)> result(
-        abi::__cxa_demangle(mangled, 0, 0, &status), std::free);
-      return result.get() ? std::string(result.get()) : "error occurred";
+  int status;
+  std::unique_ptr<char[], void (*)(void*)> result(
+    abi::__cxa_demangle(mangled, 0, 0, &status), std::free);
+  return result.get() ? std::string(result.get()) : "error occurred";
 }
 
 }  // namespace srpc

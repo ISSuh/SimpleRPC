@@ -3,9 +3,9 @@ project(example)
 message("SimpleRPC Examples")
 
 SET ( SUBDIRS
-  client
-  server
-  # testCode
+  # client
+  # server
+  testCode
 )
 
 foreach(SUBDIR ${SUBDIRS})

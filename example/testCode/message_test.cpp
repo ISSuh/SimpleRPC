@@ -5,42 +5,59 @@
  */
 
 #include <iostream>
-#include <srpc.hpp>
+
+#include <srpc/net/message/Message.hpp>
 
 int main(int argc, char* argv[]) {
   std::cout << "SimpleRPC Message Test\n";
 
-  srpc::Uuid newUUID = boost::uuids::random_generator()();
-  std::string strUUID = to_string(newUUID);
-  std::cout << strUUID << std::endl;
+  srpc::Message sm1("00000011-1100-0000-0000-000001100000",
+                                 srpc::Command::ACCEPT);
 
-  srpc::Message serializeMessage(strUUID, srpc::Command::ACCEPT);
-
-  serializeMessage.printPacketforDubugging();
+  sm1.printPacketHeader();
   std::cout << std::endl;
 
-  std::string serializedMessage(serializeMessage.serialize());
+  std::string smStr1(sm1.serialize());
 
-  srpc::Message deserializedMsg(serializedMessage);
-  deserializedMsg.printPacketforDubugging();
+  srpc::Message dm1(smStr1);
+  dm1.printPacketHeader();
 
-  std::cout << "==================================\n\n";
+  std::cout << "==============================================\n";
 
-  srpc::Uuid newUUID_1 = boost::uuids::random_generator()();
-  std::string strUUID_1 = to_string(newUUID_1);
-  std::cout << strUUID_1 << std::endl;
+  srpc::Message sm2("00000011-1100-0000-0000-000001100000",
+                    srpc::Command::REQUEST);
 
-  srpc::Message serializeMessage_1(strUUID_1, srpc::Command::ACCEPT);
+  sm2.setServiceName("myService");
+  sm2.setRpcName("myRpc");
+  sm2.setParams("myParam");
 
-  serializeMessage_1.setServiceName("myServicadafasdfse");
-  serializeMessage_1.setRpcName("myRPCasdfadf");
-  serializeMessage_1.setParams("{\"params\":\"hello\"}");
+  sm2.printPacketHeader();
+  sm2.printRequestPacketHeader();
 
-  serializeMessage_1.printPacketforDubugging();
   std::cout << std::endl;
 
-  std::string serializedMessage_1(serializeMessage_1.serialize());
+  std::string smStr2(sm2.serialize());
 
-  srpc::Message deserializedMsg_1(serializedMessage_1);
-  deserializedMsg_1.printPacketforDubugging();
+  srpc::Message dm2(smStr2);
+  dm2.printPacketHeader();
+  dm2.printRequestPacketHeader();
+
+  std::cout << "==============================================\n";
+
+  srpc::Message sm3("00000011-1100-0000-0000-000001100000",
+                    srpc::Command::REPONSE);
+
+  sm3.setResponse(2.6);
+
+  sm3.printPacketHeader();
+  sm3.printReponsePacketHeader();
+
+  std::cout << std::endl;
+
+  std::string smStr3(sm3.serialize());
+
+  srpc::Message dm3(smStr3);
+  dm3.printPacketHeader();
+  dm3.printReponsePacketHeader();
+
 }
