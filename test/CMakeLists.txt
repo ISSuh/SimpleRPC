@@ -1,19 +1,24 @@
-PROJECT (test)
+PROJECT (SRPC_Test)
 
-enable_testing()
+#-------------------------------------------------------------------------------
+# Set Test
+#-------------------------------------------------------------------------------
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY  ${BUILD_DIR_TESTS} )
 
 SET ( TEST_SOURCES
-  test_abstract_factory
-  test_builder
+  message_test
 )
 
+#-------------------------------------------------------------------------------
+# Final target
+#-------------------------------------------------------------------------------
 foreach(TEST_NAME ${TEST_SOURCES})
 
   add_executable( ${TEST_NAME} ${TEST_NAME}.cpp )
 
   target_include_directories( ${TEST_NAME}
   PUBLIC
-      ${CMAKE_SOURCE_DIR}/src
+    ${SRPC_INCLUDES}
   )
 
   target_link_libraries( ${TEST_NAME} gtest gtest_main )
