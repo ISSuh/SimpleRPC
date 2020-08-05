@@ -5,6 +5,7 @@
  */
 
 #include <iostream>
+#include <vector>
 
 #include <srpc/net/message/Message.hpp>
 
@@ -47,7 +48,12 @@ int main(int argc, char* argv[]) {
   srpc::Message sm3("00000011-1100-0000-0000-000001100000",
                     srpc::Command::REPONSE);
 
-  sm3.setResponse(2.6);
+  std::vector<int> tt;
+  for (auto i = 0 ; i < 5 ; ++i) {
+    tt.push_back(i);
+  }
+
+  sm3.setResponse(tt);
 
   sm3.printPacketHeader();
   sm3.printReponsePacketHeader();
@@ -60,4 +66,10 @@ int main(int argc, char* argv[]) {
   dm3.printPacketHeader();
   dm3.printReponsePacketHeader();
 
+  std::vector<int> res;
+  dm3.getResponse(res);
+
+  for (auto& i : res) {
+    std::cout << "Val : " << i << std::endl;
+  }
 }
