@@ -49,10 +49,6 @@ class ServerSession : public Session {
   void write(Command cmd, const std::string& serializedMessage) override {
     BOOST_LOG_TRIVIAL(info) << Session::getUUID() << ": Write - " << CommandToString(cmd);
 
-    Message msg(serializedMessage);
-
-    msg.printPacketforDubugging();
-
     Session::getSocket().async_write_some(
                                 asio::buffer(serializedMessage, serializedMessage.size()),
                                 writeHandler[cmd]);

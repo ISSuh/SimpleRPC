@@ -47,7 +47,7 @@ class TcpClient : public Client {
                const std::string& paramTest) override {
     if (m_session.isConnectd()) {
       Message msg(m_session.getUUID(), Command::REQUEST);
-      msg.setBody(serviceName, rpcName, paramTest);
+      msg.setResquest(serviceName, rpcName, paramTest);
 
       m_session.write(Command::REQUEST, msg.serialize());
     }
@@ -62,13 +62,17 @@ class TcpClient : public Client {
 
     Message msg(serializedMessage);
 
-    msg.printPacketforDubugging();
-
     switch (msg.getCommand()) {
     case Command::ACCEPT :
       m_session.setUUID(msg.getUuid());
+      msg.printPacketHeader();
       break;
     case Command::REPONSE :
+      msg.printReponsePacketHeader();
+
+      int a;
+      msg.getResponse(a);
+      std::cout << a << std::endl;
       break;
     default:
       break;

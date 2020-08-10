@@ -55,12 +55,13 @@ class TcpServer : public Server {
   void onRead(const std::string& uuid, const std::string& serializedMessage) override {
     BOOST_LOG_TRIVIAL(info) << "onRead - " <<  uuid;
     Message msg(serializedMessage);
-    msg.printPacketforDubugging();
+    static int a = 0;
 
     switch (msg.getCommand()) {
     case Command::REQUEST: {
         Message responseMsg(uuid, Command::REPONSE);
-        responseMsg.setBody(msg.getBody());
+        ++a;
+        responseMsg.setResponse(a);
         m_sessionMap[uuid]->write(Command::REPONSE, responseMsg.serialize());
       }
       break;

@@ -48,9 +48,9 @@ int main(int argc, char* argv[]) {
   srpc::Message sm3("00000011-1100-0000-0000-000001100000",
                     srpc::Command::REPONSE);
 
-  std::vector<int> tt;
+  double tt[5];
   for (auto i = 0 ; i < 5 ; ++i) {
-    tt.push_back(i);
+    tt[i] = i * 2.3;
   }
 
   sm3.setResponse(tt);
@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
   dm3.printPacketHeader();
   dm3.printReponsePacketHeader();
 
-  std::vector<int> res;
+  double res[5];
   dm3.getResponse(res);
 
   for (auto& i : res) {

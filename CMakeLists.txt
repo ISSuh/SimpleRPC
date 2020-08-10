@@ -4,7 +4,6 @@ PROJECT (SimpleRPC)
 #-------------------------------------------------------------------------------
 # Set Compiler
 #-------------------------------------------------------------------------------
-# SET( CMAKE_CXX_COMPILER g++ )
 SET( CMAKE_CXX_STANDARD 11)
 SET( CMAKE_CXX_STANDARD_REQUIRED ON )
 ADD_COMPILE_OPTIONS ( -g -Wall)
@@ -17,7 +16,7 @@ find_package(Boost REQUIRED COMPONENTS system log)
 #-------------------------------------------------------------------------------
 # Set Configure
 #-------------------------------------------------------------------------------
-SET(SIMPLE_RPC_TARGET_NAME ${PROJECT_NAME})
+# SET(SIMPLE_RPC_TARGET_NAME ${PROJECT_NAME})
 
 #-------------------------------------------------------------------------------
 # Set Build Variable
@@ -26,12 +25,16 @@ SET(PROJECT_DIR ${PROJECT_SOURCE_DIR})
 SET(BUILD_DIR_EXAMPLES ${CMAKE_SOURCE_DIR}/build/bin)
 
 SET(SRPC_INCLUDES
+    # ${Boost_INCLUDE_DIRS}
     ${PROJECT_DIR}/include
-    ${Boost_INCLUDE_DIR}
 )
 
 SET(SRPC_LIBRARY
-    ${Boost_LIBRARIES}
+    # ${Boost_LIBRARY_DIRS}
+    boost_system
+    boost_log
+    boost_asio
+
     pthread
 )
 

@@ -3,8 +3,8 @@ project(example)
 message("SimpleRPC Examples")
 
 SET ( SUBDIRS
-  # client
-  # server
+  client
+  server
   testCode
 )
 
