@@ -13,6 +13,7 @@
 #include <functional>
 
 #include "../helper/Common.hpp"
+#include "../helper/TaskRunner.hpp"
 
 namespace srpc {
 
@@ -21,18 +22,14 @@ class RPCServcie {
   RPCServcie() = default;
   ~RPCServcie() = default;
 
-  template<typename T>
-  void addRPCFunction(const std::string& functionName, const RPCFunction& rpcFunc) {
-    if (m_rpcMap.find(functionName) != m_rpcMap.end()) {
-      m_rpcMap[functionName] = rpcFunc;
-    }
+  void addRpc(const std::string& service, const std::string& rpc) {
+    return;
   }
 
-  void callFunction() {}
-
  private:
-  std::map<std::string, RPCFunction> m_rpcMap;
-  const std::string m_serviceName;
+  std::map<std::string, std::string> m_serviceMap;
+
+
 };
 
 }  // namespace srpc
