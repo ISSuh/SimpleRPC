@@ -28,8 +28,6 @@ class RPCServcie {
 
  private:
   std::map<std::string, std::string> m_serviceMap;
-
-
 };
 
 }  // namespace srpc

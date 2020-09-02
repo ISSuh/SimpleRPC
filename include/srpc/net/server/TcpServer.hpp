@@ -94,7 +94,7 @@ class TcpServer : public Server {
       Uuid newUUID = boost::uuids::random_generator()();
       std::string strUUID = to_string(newUUID);
 
-      m_sessionMap.insert(std::make_pair(strUUID, session));
+      m_sessionMap.insert(std::make_pair(strUUID, std::unique_ptr<ServerSession<TcpServer>>(session)));
       session->setUUID(strUUID);
 
       BOOST_LOG_TRIVIAL(info) << "Accept New Client - " << strUUID << " / " << m_sessionMap.size();
