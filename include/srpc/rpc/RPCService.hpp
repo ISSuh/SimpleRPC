@@ -22,7 +22,7 @@ class RPCServcie {
   RPCServcie() = default;
   ~RPCServcie() = default;
 
-  void addRpc(const std::string& service, const std::string& rpc) {
+  void registRpc(const std::string& service, const std::string& rpc) {
     return;
   }
 

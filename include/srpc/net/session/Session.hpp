@@ -21,6 +21,15 @@
 
 namespace srpc {
 
+class Socket {
+};
+
+class SrpcTcpSocket : public Socket {
+};
+
+class SrpcUdpSocket : public Socket {
+};
+
 class Session {
  public:
   virtual ~Session() = default;
@@ -34,6 +43,10 @@ class Session {
 
   virtual void setUUID(const std::string& uuid ) { m_uuid = uuid; }
   virtual const std::string& getUUID() const { return m_uuid; }
+
+  virtual SystemType systemType() = 0;
+  virtual ProtocolType protocolType() = 0;
+  virtual FunctionType functionType() = 0;
 
  protected:
   explicit Session(IoService& ioContext) : m_socket(ioContext) {}

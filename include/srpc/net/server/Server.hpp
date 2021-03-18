@@ -25,6 +25,8 @@ class Server {
   virtual void onRead(const std::string& uuid, const std::string& serializedMessage) = 0;
   virtual void onWrite(const std::string& uuid) = 0;
 
+  SystemType systemType() { return SystemType::SERVER; }
+
  protected:
   virtual void accpet() = 0;
 };

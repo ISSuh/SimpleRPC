@@ -42,6 +42,11 @@ enum class Status : uint8_t {
   OK
 };
 
+enum class SystemType : uint8_t {
+  SERVER,
+  CLIENT
+};
+
 enum class ProtocolType : uint8_t {
   TCP,
   UDP
